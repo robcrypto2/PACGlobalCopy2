@@ -501,18 +501,7 @@ public:
         nPruneAfterHeight = 1000;
 
         uint32_t nTime = 1573325000;
-        uint32_t nNonce = 0;
-
-        if (nNonce == 0) {
-            while (UintToArith256(genesis.GetHash()) >
-                   UintToArith256(consensus.powLimit))
-            {
-		nNonce++;
-                genesis = CreateGenesisBlock(nTime, nNonce, 0x1f00ffff, 1, 0 * COIN, true);
-                if (nNonce % 128 == 0) printf("\rgenesis %08x", nNonce);
-            }
-        }
-
+        uint32_t nNonce = 11404;
         genesis = CreateGenesisBlock(nTime, nNonce, 0x1f00ffff, 1, 0 * COIN, true);
         consensus.hashGenesisBlock = genesis.GetHash();
 
