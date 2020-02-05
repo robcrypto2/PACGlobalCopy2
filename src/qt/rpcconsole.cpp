@@ -27,6 +27,7 @@
 
 #ifdef ENABLE_WALLET
 #include <db_cxx.h>
+#include <wallet/wallet.h>
 #endif
 
 #include <QDir>
@@ -457,6 +458,11 @@ RPCConsole::RPCConsole(const PlatformStyle *_platformStyle, QWidget *parent) :
     // connect(ui->btn_salvagewallet, SIGNAL(clicked()), this, SLOT(walletSalvage()));
     // Disable salvage option in GUI, it's way too powerful and can lead to funds loss
     ui->btn_salvagewallet->setEnabled(false);
+    ui->btn_rescan->setEnabled(true);
+    ui->btn_zapwallettxes1->setEnabled(true);
+    ui->btn_zapwallettxes2->setEnabled(true);
+    ui->btn_upgradewallet->setEnabled(true);
+    ui->btn_reindex->setEnabled(true);
     connect(ui->btn_rescan, SIGNAL(clicked()), this, SLOT(walletRescan()));
     connect(ui->btn_zapwallettxes1, SIGNAL(clicked()), this, SLOT(walletZaptxes1()));
     connect(ui->btn_zapwallettxes2, SIGNAL(clicked()), this, SLOT(walletZaptxes2()));
