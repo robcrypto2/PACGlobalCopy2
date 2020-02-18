@@ -36,9 +36,9 @@ struct BIP9Deployment {
     /** Timeout/expiry MedianTime for the deployment attempt. */
     int64_t nTimeout;
     /** The number of past blocks (including the block under consideration) to be taken into account for locking in a fork. */
-    int64_t nWindowSize;
+    int64_t nWindowSize{0};
     /** A number of blocks, in the range of 1..nWindowSize, which must signal for a fork in order to lock it in. */
-    int64_t nThreshold;
+    int64_t nThreshold{0};
     /** Constant for nTimeout very far in the future. */
     static constexpr int64_t NO_TIMEOUT = std::numeric_limits<int64_t>::max();
     /** Special value for nStartTime indicating that the deployment is always active.
@@ -133,8 +133,6 @@ struct Params {
     int nMasternodePaymentsIncreasePeriod; // in blocks
     int nInstantSendConfirmationsRequired; // in blocks
     int nInstantSendKeepLock; // in blocks
-    int nInstantSendSigsRequired;
-    int nInstantSendSigsTotal;
     int nBudgetPaymentsStartBlock;
     int nBudgetPaymentsCycleBlocks;
     int nBudgetPaymentsWindowBlocks;
@@ -202,9 +200,14 @@ struct Params {
     int nHighSubsidyFactor{1};
 
     std::map<LLMQType, LLMQParams> llmqs;
-    LLMQType llmqChainLocks;
+    LLMQType llmqTypeChainLocks;
     LLMQType llmqForInstaPAC{LLMQ_NONE};
 };
 } // namespace Consensus
+
+// This must be outside of all namespaces. We must also duplicate the forward declaration of is_serializable_enum to
+// avoid inclusion of serialize.h here.
+template<typename T> struct is_serializable_enum;
+template<> struct is_serializable_enum<Consensus::LLMQType> : std::true_type {};
 
 #endif // BITCOIN_CONSENSUS_PARAMS_H
