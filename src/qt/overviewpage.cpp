@@ -159,8 +159,6 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     // Hook the staking button to an event
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(stakingButtonPressed()));
 
-    // that's it for litemode
-    if(fLiteMode) return;
     if(!privateSendClient.fEnablePrivateSend) return;
 
     // Disable any PS UI for masternode or when autobackup is disabled or failed for whatever reason
@@ -654,8 +652,10 @@ void OverviewPage::stakingButtonPressed()
     LogPrintf("%s - event (fStakingStatus: %d)\n", __func__, fStakingStatus);
 
     if (fStakingStatus) {
-        ui->pushButton->setText(tr("Staking Enabled"));
+        ui->pushButton->setText(tr("Staking on"));
+        usleep(100); //! debounce
     } else {
-        ui->pushButton->setText(tr("Staking Disabled"));
+        ui->pushButton->setText(tr("Staking off"));
+        usleep(100); //! debounce
     }
 }

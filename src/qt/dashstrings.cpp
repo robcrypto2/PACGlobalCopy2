@@ -9,7 +9,7 @@
 #define UNUSED
 #endif
 static const char UNUSED *dash_strings[] = {
-QT_TRANSLATE_NOOP("dash-core", "PACGlobal Core"),
+QT_TRANSLATE_NOOP("dash-core", "PACGlobal"),
 QT_TRANSLATE_NOOP("dash-core", "The %s developers"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "%s file contains all private keys from this wallet. Do not share it with "
@@ -61,7 +61,7 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Disable all PACGlobal specific functionality (Masternodes, PrivateSend, "
-"InstaPAC, Governance) (0-1, default: %u)"),
+"InstantSend, Governance) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Discover own IP addresses (default: 1 when listening and no -externalip or -"
 "proxy)"),
@@ -74,10 +74,10 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "Enable multiple PrivateSend mixing sessions per block, experimental (0-1, "
 "default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Enable publish raw transactions of attempted InstaPAC double spend in "
+"Enable publish raw transactions of attempted InstantSend double spend in "
 "<address>"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Enable publish transaction hashes of attempted InstaPAC double spend in "
+"Enable publish transaction hashes of attempted InstantSend double spend in "
 "<address>"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Enable use of PrivateSend for funds stored in this wallet (0-1, default: %u)"),
@@ -99,7 +99,7 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "Execute command when a relevant alert is received or we see a really long "
 "fork (%s in cmd is replaced by message)"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Execute command when a wallet InstaPAC transaction is successfully locked "
+"Execute command when a wallet InstantSend transaction is successfully locked "
 "(%s in cmd is replaced by TxID)"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Execute command when a wallet transaction changes (%s in cmd is replaced by "
@@ -336,7 +336,7 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "Whitelisted peers cannot be DoS banned and their transactions are always "
 "relayed, even if they are already in the mempool, useful e.g. for a gateway"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"You are starting in lite mode, most Dash-specific functionality is disabled."),
+"You are starting in lite mode, most PACGlobal-specific functionality is disabled."),
 QT_TRANSLATE_NOOP("dash-core", ""
 "You need to rebuild the database using -reindex to change -timestampindex"),
 QT_TRANSLATE_NOOP("dash-core", ""
@@ -390,10 +390,10 @@ QT_TRANSLATE_NOOP("dash-core", "ERROR! Failed to create automatic backup"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash block in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash of governance objects (like proposals) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash of governance votes in <address>"),
-QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction (locked via InstaPAC) in <address>"),
+QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction (locked via InstantSend) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish raw block in <address>"),
-QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction (locked via InstaPAC) in <address>"),
+QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction (locked via InstantSend) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Entries are full."),
 QT_TRANSLATE_NOOP("dash-core", "Entry exceeds maximum size."),
@@ -452,7 +452,7 @@ QT_TRANSLATE_NOOP("dash-core", "Invalid script detected."),
 QT_TRANSLATE_NOOP("dash-core", "Invalid spork address specified with -sporkaddr"),
 QT_TRANSLATE_NOOP("dash-core", "KeePassHttp id for the established association"),
 QT_TRANSLATE_NOOP("dash-core", "KeePassHttp key for AES encrypted communication with KeePass"),
-QT_TRANSLATE_NOOP("dash-core", "Keep N DASH mixed (%u-%u, default: %u)"),
+QT_TRANSLATE_NOOP("dash-core", "Keep N PAC mixed (%u-%u, default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", "Keep at most <n> unconnectable transactions in memory (default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", "Keep the transaction memory pool below <n> megabytes (default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", "Keypool ran out, please call keypoolrefill first"),

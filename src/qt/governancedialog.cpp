@@ -5,11 +5,11 @@
 #include "governancedialog.h"
 #include "ui_governancedialog.h"
 
-#include <masternode-sync.h>
-#include <governance.h>
-#include <governance-vote.h>
-#include <governance-classes.h>
-#include <governance-validators.h>
+#include <masternode/masternode-sync.h>
+#include <governance/governance.h>
+#include <governance/governance-vote.h>
+#include <governance/governance-classes.h>
+#include <governance/governance-validators.h>
 #include <bitcoinunits.h>
 #include <guiconstants.h>
 #include <guiutil.h>

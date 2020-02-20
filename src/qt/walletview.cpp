@@ -318,8 +318,8 @@ void WalletView::unlockWallet(bool fForMixingOnly)
 {
     if(!walletModel)
         return;
-
     // Unlock wallet when requested by wallet model
+
     if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForMixingOnly)
     {
         AskPassphraseDialog dlg(fForMixingOnly ? AskPassphraseDialog::UnlockMixing : AskPassphraseDialog::Unlock, this);

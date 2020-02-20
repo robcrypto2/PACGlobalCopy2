@@ -417,6 +417,7 @@ CDeterministicMNList CDeterministicMNList::ApplyDiff(const CBlockIndex* pindex, 
         result.RemoveMN(dmn->proTxHash);
     }
     for (const auto& dmn : diff.addedMNs) {
+        //! LogPrintf("dmn->internalId %d / result.GetTotalRegisteredCount %d\n", dmn->internalId,  result.GetTotalRegisteredCount());
         assert(dmn->internalId == result.GetTotalRegisteredCount());
         result.AddMN(dmn);
         result.SetTotalRegisteredCount(result.GetTotalRegisteredCount() + 1);
@@ -603,6 +604,17 @@ void CDeterministicMNManager::UpdatedBlockTip(const CBlockIndex* pindex)
     tipIndex = pindex;
 }
 
+bool IsKludgeMN(uint256& dmnHash)
+{
+    if (dmnHash == uint256S("5f664b4350c68c4883586887a9f7505a75110ba84c46622f2e62c4ef50538e8f") ||
+        dmnHash == uint256S("260990d527d6b0c2ad7d07fefc38651e687d022faa0f00576566584431c33e6e") ||
+        dmnHash == uint256S("ba33e7e0da86f74a90c50aff5936813cde75d40945ab1913ac8ba0b8dce5e18c") ||
+        dmnHash == uint256S("f4a153f5904e23c349b5e572de9ac1f456acf7055996edff000b554c1fc06ecd") ||
+        dmnHash == uint256S("ee4f8c98076cf2914cc814d5ee711c59947e42ede983f7b103afd7922abd6857"))
+        return true;
+    return false;
+}
+
 bool CDeterministicMNManager::BuildNewListFromBlock(const CBlock& block, const CBlockIndex* pindexPrev, CValidationState& _state, CDeterministicMNList& mnListRet, bool debugLogs)
 {
     AssertLockHeld(cs);
@@ -636,6 +648,14 @@ bool CDeterministicMNManager::BuildNewListFromBlock(const CBlock& block, const C
 
     DecreasePoSePenalties(newList);
 
+    //! lets check the list first
+    std::list<uint256> dmnHashList;
+    for (int i = 1; i < (int)block.vtx.size(); i++) {
+        const CTransaction& tx = *block.vtx[i];
+        uint256 mnHash = tx.GetHash();
+        dmnHashList.push_back(mnHash);
+    }
+
     // we skip the coinbase
     for (int i = 1; i < (int)block.vtx.size(); i++) {
         const CTransaction& tx = *block.vtx[i];
@@ -653,6 +673,11 @@ bool CDeterministicMNManager::BuildNewListFromBlock(const CBlock& block, const C
 
             auto dmn = std::make_shared<CDeterministicMN>();
             dmn->proTxHash = tx.GetHash();
+
+            //! duplicates get removed
+            if (IsKludgeMN(dmn->proTxHash))
+                continue;
+
             dmn->internalId = newList.GetTotalRegisteredCount();
             newList.SetTotalRegisteredCount(newList.GetTotalRegisteredCount() + 1);
 

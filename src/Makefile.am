@@ -66,15 +66,15 @@ endif
 
 LIBBITCOIN_CRYPTO= $(LIBBITCOIN_CRYPTO_BASE)
 if ENABLE_SSE41
-LIBBITCOIN_CRYPTO_SSE41 = crypto/libdash_crypto_sse41.a
+LIBBITCOIN_CRYPTO_SSE41 = crypto/libpacglobal_crypto_sse41.a
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SSE41)
 endif
 if ENABLE_AVX2
-LIBBITCOIN_CRYPTO_AVX2 = crypto/libdash_crypto_avx2.a
+LIBBITCOIN_CRYPTO_AVX2 = crypto/libpacglobal_crypto_avx2.a
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_AVX2)
 endif
 if ENABLE_SHANI
-LIBBITCOIN_CRYPTO_SHANI = crypto/libdash_crypto_shani.a
+LIBBITCOIN_CRYPTO_SHANI = crypto/libpacglobal_crypto_shani.a
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SHANI)
 endif
 
@@ -276,7 +276,6 @@ libpacglobal_util_a-clientversion.$(OBJEXT): obj/build.h
 libpacglobal_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
 libpacglobal_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpacglobal_server_a_SOURCES = \
-  activemasternode.cpp \
   addrman.cpp \
   addrdb.cpp \
   addrman.cpp \
@@ -300,7 +299,6 @@ libpacglobal_server_a_SOURCES = \
   httprpc.cpp \
   httpserver.cpp \
   init.cpp \
-  instantx.cpp \
   kernel.cpp \
   dbwrapper.cpp \
   governance/governance.cpp \
@@ -460,11 +458,11 @@ crypto_libpacglobal_crypto_base_a_SOURCES += \
   crypto/sph_skein.h \
   crypto/sph_types.h
 
-crypto_libdash_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libdash_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libdash_crypto_shani_a_CXXFLAGS += $(SHANI_CXXFLAGS)
-crypto_libdash_crypto_shani_a_CPPFLAGS += -DENABLE_SHANI
-crypto_libdash_crypto_shani_a_SOURCES = crypto/sha256_shani.cpp
+crypto_libpacglobal_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libpacglobal_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libpacglobal_crypto_shani_a_CXXFLAGS += $(SHANI_CXXFLAGS)
+crypto_libpacglobal_crypto_shani_a_CPPFLAGS += -DENABLE_SHANI
+crypto_libpacglobal_crypto_shani_a_SOURCES = crypto/sha256_shani.cpp
 
 # consensus: shared between all executables that validate any consensus rules.
 libpacglobal_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
@@ -508,7 +506,6 @@ libpacglobal_consensus_a_SOURCES = \
 libpacglobal_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libpacglobal_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpacglobal_common_a_SOURCES = \
-  amount.cpp \
   base58.cpp \
   bip39.cpp \
   chainparams.cpp \

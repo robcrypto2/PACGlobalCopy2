@@ -1,11 +1,11 @@
 #include "governancelist.h"
 #include "ui_governancelist.h"
-#include <masternode-sync.h>
+#include <masternode/masternode-sync.h>
 #include <messagesigner.h>
-#include <governance.h>
-#include <governance-vote.h>
-#include <governance-classes.h>
-#include <governance-validators.h>
+#include <governance/governance.h>
+#include <governance/governance-vote.h>
+#include <governance/governance-classes.h>
+#include <governance/governance-validators.h>
 #include <governancedialog.h>
 #include <messagesigner.h>
 #include <clientmodel.h>
@@ -156,7 +156,7 @@ void GovernanceList::Vote(uint256 nHash, vote_outcome_enum_t eVoteOutcome)
     int nFailed = 0;
     vote_signal_enum_t eVoteSignal = CGovernanceVoting::ConvertVoteSignal("funding");
     if (eVoteSignal == VOTE_SIGNAL_NONE || eVoteOutcome == VOTE_OUTCOME_NONE) {
-        LogPrint("governance", "We are not going to be voting.");
+        LogPrintf("We are not going to be voting.");
         return;
     }
 
@@ -164,13 +164,13 @@ void GovernanceList::Vote(uint256 nHash, vote_outcome_enum_t eVoteOutcome)
     auto mnList = deterministicMNManager->GetListAtChainTip();
     mnList.ForEachMN(true, [&](const CDeterministicMNCPtr& dmn) {
         CKey votingKey;
-        if (pwalletMain->GetKey(dmn->pdmnState->keyIDVoting, votingKey)) {
+        if (vpwallets[0]->GetKey(dmn->pdmnState->keyIDVoting, votingKey)) {
             nTotalVotes++;
             votingKeys.emplace(dmn->proTxHash, votingKey);
         }
     });
 
-    LogPrint("governance", "Will be voting using %d deterministic masternodes.", nTotalVotes);
+    LogPrintf("Will be voting using %d deterministic masternodes.", nTotalVotes);
 
     {
         LOCK(governance.cs);
@@ -201,7 +201,7 @@ void GovernanceList::Vote(uint256 nHash, vote_outcome_enum_t eVoteOutcome)
             nFailed++;
         }
     }
-    LogPrint("governance", "Voted successfully %d time(s) and failed %d time(s).", nSuccessful, nFailed);
+    LogPrintf("Voted successfully %d time(s) and failed %d time(s).", nSuccessful, nFailed);
 }
 
 GovernanceList::~GovernanceList()

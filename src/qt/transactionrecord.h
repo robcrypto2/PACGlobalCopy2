@@ -21,7 +21,7 @@ class TransactionStatus
 {
 public:
     TransactionStatus():
-        countsForBalance(false), lockedByInstaPAC(false), sortKey(""),
+        countsForBalance(false), lockedByInstantSend(false), lockedByChainLocks(false), sortKey(""),
         matures_in(0), status(Offline), depth(0), open_for(0), cur_num_blocks(-1),
         cachedChainLockHeight(-1), needsUpdate(false)
     { }
@@ -45,7 +45,7 @@ public:
     /// Transaction counts towards available balance
     bool countsForBalance;
     /// Transaction was locked via InstantSend
-    bool lockedByInstaPAC;
+    bool lockedByInstantSend;
     /// Transaction was locked via ChainLocks
     bool lockedByChainLocks;
     /// Sorting key based on status
@@ -86,7 +86,6 @@ public:
     {
         Other,
         Generated,
-        StakeMint,
         SendToAddress,
         SendToOther,
         RecvWithAddress,
@@ -97,8 +96,7 @@ public:
         PrivateSendCollateralPayment,
         PrivateSendMakeCollaterals,
         PrivateSendCreateDenominations,
-        PrivateSend,
-        MNReward
+        PrivateSend
     };
 
     /** Number of confirmation recommended for accepting a transaction */

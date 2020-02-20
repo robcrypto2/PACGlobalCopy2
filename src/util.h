@@ -36,8 +36,8 @@
 
 // Uncomment the following line to enable debugging messages
 // or enable on a per file basis prior to inclusion of util.h
-//#define ENABLE_PAC_DEBUG
-#ifdef ENABLE_PAC_DEBUG
+//#define ENABLE_DASH_DEBUG
+#ifdef ENABLE_DASH_DEBUG
 #define DBG( x ) x
 #else
 #define DBG( x )
@@ -124,7 +124,7 @@ namespace BCLog {
         QT          = (1 << 19),
         LEVELDB     = (1 << 20),
 
-        //Start Dash
+        //Start PACGlobal
         CHAINLOCKS  = ((uint64_t)1 << 32),
         GOBJECT     = ((uint64_t)1 << 33),
         INSTANTSEND = ((uint64_t)1 << 34),
@@ -136,7 +136,7 @@ namespace BCLog {
         MNSYNC      = ((uint64_t)1 << 40),
         PRIVATESEND = ((uint64_t)1 << 41),
         SPORK       = ((uint64_t)1 << 42),
-        //End Dash
+        //End PACGlobal
 
         ALL         = ~(uint64_t)0,
     };

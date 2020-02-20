@@ -46,22 +46,22 @@ QString BitcoinUnits::name(int unit)
     {
         switch(unit)
         {
-            case PAC: return QString("PAC");
-            case mPAC: return QString("mPAC");
-            case uPAC: return QString::fromUtf8("μPAC");
-            case duffs: return QString("duffs");
-            default: return QString("???");
+            case PAC: return QString(" PAC");
+            case mPAC: return QString(" mPAC");
+            case uPAC: return QString::fromUtf8(" μPAC");
+            case duffs: return QString(" duffs");
+            default: return QString(" ???");
         }
     }
     else
     {
         switch(unit)
         {
-            case PAC: return QString("tPAC");
-            case mPAC: return QString("mtPAC");
-            case uPAC: return QString::fromUtf8("μtPAC");
-            case duffs: return QString("tduffs");
-            default: return QString("???");
+            case PAC: return QString(" tPAC");
+            case mPAC: return QString(" mtPAC");
+            case uPAC: return QString::fromUtf8(" μtPAC");
+            case duffs: return QString(" tduffs");
+            default: return QString(" ???");
         }
     }
 }
@@ -83,10 +83,10 @@ QString BitcoinUnits::description(int unit)
     {
         switch(unit)
         {
-            case PAC: return QString("TestPACGlobals");
-            case mPAC: return QString("Milli-TestPACGlobal (1 / 1" THIN_SP_UTF8 "000)");
-            case uPAC: return QString("Micro-TestPACGlobal (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-            case duffs: return QString("Ten Nano-TestPACGlobal (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case PAC: return QString("TestDashs");
+            case mPAC: return QString("Milli-TestDash (1 / 1" THIN_SP_UTF8 "000)");
+            case uPAC: return QString("Micro-TestDash (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case duffs: return QString("Ten Nano-TestDash (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
     }

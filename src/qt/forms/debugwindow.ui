@@ -418,9 +418,9 @@
         </spacer>
        </item>
        <item row="16" column="0">
-        <widget class="QLabel" name="labelInstaPACLockCount">
+        <widget class="QLabel" name="labelInstantSendLockCount">
          <property name="text">
-          <string>InstaPAC locks</string>
+          <string>InstantSend locks</string>
          </property>
         </widget>
        </item>

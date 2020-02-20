@@ -1605,7 +1605,7 @@ void ThreadMapPort()
             }
         }
 
-        std::string strDesc = "PACGlobal Core " + FormatFullVersion();
+        std::string strDesc = "PACGlobal " + FormatFullVersion();
 
         try {
             while (true) {

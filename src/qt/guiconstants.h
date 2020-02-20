@@ -12,7 +12,7 @@ static const int MODEL_UPDATE_DELAY = 250;
 /* AskPassphraseDialog -- Maximum passphrase length */
 static const int MAX_PASSPHRASE_SIZE = 1024;
 
-/* PACGlobalGUI -- Size of icons in status bar */
+/* DashGUI -- Size of icons in status bar */
 static const int STATUSBAR_ICONSIZE = 16;
 
 static const bool DEFAULT_SPLASHSCREEN = true;
@@ -32,9 +32,10 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "PACGlobal"
-#define QAPP_ORG_DOMAIN "pacglobal.io"
+#define QAPP_ORG_DOMAIN "dash.org"
 #define QAPP_APP_NAME_DEFAULT "PACGlobal-Qt"
 #define QAPP_APP_NAME_TESTNET "PACGlobal-Qt-testnet"
 #define QAPP_APP_NAME_DEVNET "PACGlobal-Qt-%s"
+#define QAPP_APP_NAME_REGTEST "PACGlobal-Qt-regtest"
 
 #endif // BITCOIN_QT_GUICONSTANTS_H

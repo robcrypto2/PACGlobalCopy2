@@ -28,7 +28,7 @@ enum HTTPStatusCode
     HTTP_SERVICE_UNAVAILABLE   = 503,
 };
 
-//! PACGlobal Core RPC error codes
+//! PACGlobal RPC error codes
 enum RPCErrorCode
 {
     //! Standard JSON-RPC 2.0 errors

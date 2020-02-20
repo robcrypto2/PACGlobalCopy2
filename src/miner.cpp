@@ -41,6 +41,9 @@
 #include "llmq/quorums_blockprocessor.h"
 #include "llmq/quorums_chainlocks.h"
 
+#include <boost/thread.hpp>
+#include <boost/tuple/tuple.hpp>
+
 #include <algorithm>
 #include <queue>
 #include <utility>
@@ -121,7 +124,7 @@ void BlockAssembler::resetBlock()
     nFees = 0;
 }
 
-std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, bool fProofOfStake)
+std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(CWallet *wallet, const CScript &scriptPubKeyIn, bool fProofOfStake)
 {
     int64_t nTimeStart = GetTimeMicros();
 
@@ -169,7 +172,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     std::vector<const CWalletTx*> vwtxPrev;
 
     if(fProofOfStake) {
-        assert(pwalletMain);
+        assert(wallet);
         boost::this_thread::interruption_point();
         pblock->nBits = GetNextWorkRequired(pindexPrev, chainparams.GetConsensus());
         CMutableTransaction coinstakeTx;
@@ -177,7 +180,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         bool fStakeFound = false;
         if (nSearchTime >= nLastCoinStakeSearchTime) {
             unsigned int nTxNewTime = 0;
-            if (pwalletMain->CreateCoinStake(*pwalletMain, pblock->nBits, blockReward, coinstakeTx, nTxNewTime, vwtxPrev)) {
+            if (wallet->CreateCoinStake(*wallet, pblock->nBits, blockReward, coinstakeTx, nTxNewTime, vwtxPrev)) {
                 pblock->nTime = nTxNewTime;
                 coinbaseTx.vout[0].SetEmpty();
                 FillBlockPayments(coinstakeTx, nHeight, blockReward, pblocktemplate->voutMasternodePayments, pblocktemplate->voutSuperblockPayments);
@@ -366,7 +369,9 @@ int BlockAssembler::UpdatePackagesForAdded(const CTxMemPool::setEntries& already
 bool BlockAssembler::SkipMapTxEntry(CTxMemPool::txiter it, indexed_modified_transaction_set &mapModifiedTx, CTxMemPool::setEntries &failedTx)
 {
     assert (it != mempool.mapTx.end());
-    return mapModifiedTx.count(it) || inBlock.count(it) || failedTx.count(it);
+    if (mapModifiedTx.count(it) || inBlock.count(it) || failedTx.count(it))
+        return true;
+    return false;
 }
 
 void BlockAssembler::SortForBlock(const CTxMemPool::setEntries& package, CTxMemPool::txiter entry, std::vector<CTxMemPool::txiter>& sortedEntries)
@@ -561,6 +566,7 @@ void static BitcoinMiner(const CChainParams& chainparams, CConnman& connman, CWa
     RenameThread("bitcoin-miner");
 
     unsigned int nExtraNonce = 0;
+
     std::shared_ptr<CReserveScript> coinbaseScript;
     pwallet->GetScriptForMining(coinbaseScript);
 
@@ -577,8 +583,6 @@ void static BitcoinMiner(const CChainParams& chainparams, CConnman& connman, CWa
                 throw std::runtime_error("No coinbase script available (mining requires a wallet)");
 
             do {
-                if (!chainparams.MiningRequiresPeers())
-                    break;
                 bool fvNodesEmpty = connman.GetNodeCount(CConnman::CONNECTIONS_ALL) == 0;
                 if (!fvNodesEmpty && !IsInitialBlockDownload() && masternodeSync.IsSynced())
                     break;
@@ -604,7 +608,7 @@ void static BitcoinMiner(const CChainParams& chainparams, CConnman& connman, CWa
             if(!pindexPrev) break;
 
             BlockAssembler assembler(chainparams);
-            auto pblocktemplate = assembler.CreateNewBlock(coinbaseScript->reserveScript, fProofOfStake);
+            auto pblocktemplate = assembler.CreateNewBlock(pwallet, coinbaseScript->reserveScript, fProofOfStake);
             if (!pblocktemplate.get()) {
                 MilliSleep(5000);
                 continue;
@@ -699,12 +703,9 @@ void static BitcoinMiner(const CChainParams& chainparams, CConnman& connman, CWa
     }
 }
 
-void GenerateBitcoins(bool fGenerate,
-                  int nThreads,
-                  const CChainParams& chainparams,
-                  CConnman &connman)
+void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams, CConnman &connman)
 {
-    static boost::thread_group* minerThreads = NULL;
+    static boost::thread_group* minerThreads = nullptr;
 
     if (nThreads < 0)
         nThreads = GetNumCores();
@@ -721,33 +722,31 @@ void GenerateBitcoins(bool fGenerate,
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&BitcoinMiner, boost::cref(chainparams), boost::ref(connman), pwalletMain, false));
+        minerThreads->create_thread(boost::bind(&BitcoinMiner, boost::cref(chainparams), boost::ref(connman), GetWallets().front(), false));
 }
 
-void RunStakeMinter(const CChainParams &chainparams, CConnman &connman)
+void RunStakeMinter(const CChainParams &chainparams, CConnman &connman, CWallet *pwallet)
 {
     boost::this_thread::interruption_point();
     LogPrintf("ThreadStakeMinter started\n");
     try {
-        BitcoinMiner(chainparams, connman, pwalletMain, true);
+        BitcoinMiner(chainparams, connman, pwallet, true);
         boost::this_thread::interruption_point();
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         LogPrintf("ThreadStakeMinter() exception %s\n", e.what());
-    }
-    catch (...) {
+    } catch (...) {
         LogPrintf("ThreadStakeMinter() error \n");
     }
 }
 
-void ThreadStakeMinter(const CChainParams &chainparams, CConnman &connman)
+void ThreadStakeMinter(const CChainParams &chainparams, CConnman &connman, CWallet *pwallet)
 {
     while (true)
     {
         bool fStaking = IsStakingEnabled();
 
 	if (fStaking)
-	    RunStakeMinter(chainparams, connman);
+	    RunStakeMinter(chainparams, connman, pwallet);
 
         if (ShutdownRequested()) break;
 

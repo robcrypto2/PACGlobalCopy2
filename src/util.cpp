@@ -265,7 +265,7 @@ const CLogCategoryDesc LogCategories[] =
     {BCLog::ALL, "1"},
     {BCLog::ALL, "all"},
 
-    //Start Dash
+    //Start PACGlobal
     {BCLog::CHAINLOCKS, "chainlocks"},
     {BCLog::GOBJECT, "gobject"},
     {BCLog::INSTANTSEND, "instantsend"},
@@ -277,7 +277,7 @@ const CLogCategoryDesc LogCategories[] =
     {BCLog::MNSYNC, "mnsync"},
     {BCLog::PRIVATESEND, "privatesend"},
     {BCLog::SPORK, "spork"},
-    //End Dash
+    //End PACGlobal
 
 };
 
@@ -1115,10 +1115,6 @@ std::string SafeIntVersionToString(uint32_t nVersion)
     }
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin2/v0.15.x
 // Obtain the application startup time (used for uptime calculation)
 int64_t GetStartupTime()
 {
