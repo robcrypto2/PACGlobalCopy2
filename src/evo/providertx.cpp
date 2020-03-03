@@ -21,23 +21,23 @@ template <typename ProTx>
 static bool CheckService(const uint256& proTxHash, const ProTx& proTx, CValidationState& state)
 {
     if (!proTx.addr.IsValid()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-addr");
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr");
     }
     if (Params().NetworkIDString() != CBaseChainParams::REGTEST && !proTx.addr.IsRoutable()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-addr");
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr");
     }
 
-    int mainnetDefaultPort = Params(CBaseChainParams::MAIN).GetDefaultPort();
+    static int mainnetDefaultPort = CreateChainParams(CBaseChainParams::MAIN)->GetDefaultPort();
     if (Params().NetworkIDString() == CBaseChainParams::MAIN) {
         if (proTx.addr.GetPort() != mainnetDefaultPort) {
-            return state.DoS(10, false, REJECT_INVALID, "bad-protx-addr-port");
+            return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr-port");
         }
     } else if (proTx.addr.GetPort() == mainnetDefaultPort) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-addr-port");
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr-port");
     }
 
     if (!proTx.addr.IsIPv4()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-addr");
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr");
     }
 
     return true;
@@ -132,7 +132,7 @@ bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValid
     }
 
     CTxDestination collateralTxDest;
-    CKeyID keyForPayloadSig;
+    const CKeyID *keyForPayloadSig = nullptr;
     COutPoint collateralOutpoint;
 
     if (!ptx.collateralOutpoint.hash.IsNull()) {
@@ -147,7 +147,8 @@ bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValid
 
         // Extract key from collateral. This only works for P2PK and P2PKH collaterals and will fail for P2SH.
         // Issuer of this ProRegTx must prove ownership with this key by signing the ProRegTx
-        if (!CBitcoinAddress(collateralTxDest).GetKeyID(keyForPayloadSig)) {
+        keyForPayloadSig = boost::get<CKeyID>(&collateralTxDest);
+        if (!keyForPayloadSig) {
             return state.DoS(10, false, REJECT_INVALID, "bad-protx-collateral-pkh");
         }
 
@@ -191,9 +192,9 @@ bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValid
         return false;
     }
 
-    if (!keyForPayloadSig.IsNull()) {
+    if (keyForPayloadSig) {
         // collateral is not part of this ProRegTx, so we must verify ownership of the collateral
-        if (!CheckStringSig(ptx, keyForPayloadSig, state)) {
+        if (!CheckStringSig(ptx, *keyForPayloadSig, state)) {
             return false;
         }
     } else {
@@ -247,7 +248,7 @@ bool CheckProUpServTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CVa
             }
         }
 
-        // we can only check the signature if pindexPrev != NULL and the MN is known
+        // we can only check the signature if pindexPrev != nullptr and the MN is known
         if (!CheckInputsHash(tx, ptx, state)) {
             return false;
         }
@@ -410,28 +411,6 @@ std::string CProRegTx::ToString() const
         nVersion, collateralOutpoint.ToStringShort(), addr.ToString(), (double)nOperatorReward / 100, CBitcoinAddress(keyIDOwner).ToString(), pubKeyOperator.ToString(), CBitcoinAddress(keyIDVoting).ToString(), payee);
 }
 
-void CProRegTx::ToJson(UniValue& obj) const
-{
-    obj.clear();
-    obj.setObject();
-    obj.push_back(Pair("version", nVersion));
-    obj.push_back(Pair("collateralHash", collateralOutpoint.hash.ToString()));
-    obj.push_back(Pair("collateralIndex", (int)collateralOutpoint.n));
-    obj.push_back(Pair("service", addr.ToString(false)));
-    obj.push_back(Pair("ownerAddress", CBitcoinAddress(keyIDOwner).ToString()));
-    obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
-
-    CTxDestination dest;
-    if (ExtractDestination(scriptPayout, dest)) {
-        CBitcoinAddress bitcoinAddress(dest);
-        obj.push_back(Pair("payoutAddress", bitcoinAddress.ToString()));
-    }
-    obj.push_back(Pair("pubKeyOperator", pubKeyOperator.ToString()));
-    obj.push_back(Pair("operatorReward", (double)nOperatorReward / 100));
-
-    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
-}
-
 std::string CProUpServTx::ToString() const
 {
     CTxDestination dest;
@@ -442,21 +421,6 @@ std::string CProUpServTx::ToString() const
 
     return strprintf("CProUpServTx(nVersion=%d, proTxHash=%s, addr=%s, operatorPayoutAddress=%s)",
         nVersion, proTxHash.ToString(), addr.ToString(), payee);
-}
-
-void CProUpServTx::ToJson(UniValue& obj) const
-{
-    obj.clear();
-    obj.setObject();
-    obj.push_back(Pair("version", nVersion));
-    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
-    obj.push_back(Pair("service", addr.ToString(false)));
-    CTxDestination dest;
-    if (ExtractDestination(scriptOperatorPayout, dest)) {
-        CBitcoinAddress bitcoinAddress(dest);
-        obj.push_back(Pair("operatorPayoutAddress", bitcoinAddress.ToString()));
-    }
-    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }
 
 std::string CProUpRegTx::ToString() const
@@ -471,34 +435,8 @@ std::string CProUpRegTx::ToString() const
         nVersion, proTxHash.ToString(), pubKeyOperator.ToString(), CBitcoinAddress(keyIDVoting).ToString(), payee);
 }
 
-void CProUpRegTx::ToJson(UniValue& obj) const
-{
-    obj.clear();
-    obj.setObject();
-    obj.push_back(Pair("version", nVersion));
-    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
-    obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
-    CTxDestination dest;
-    if (ExtractDestination(scriptPayout, dest)) {
-        CBitcoinAddress bitcoinAddress(dest);
-        obj.push_back(Pair("payoutAddress", bitcoinAddress.ToString()));
-    }
-    obj.push_back(Pair("pubKeyOperator", pubKeyOperator.ToString()));
-    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
-}
-
 std::string CProUpRevTx::ToString() const
 {
     return strprintf("CProUpRevTx(nVersion=%d, proTxHash=%s, nReason=%d)",
         nVersion, proTxHash.ToString(), nReason);
-}
-
-void CProUpRevTx::ToJson(UniValue& obj) const
-{
-    obj.clear();
-    obj.setObject();
-    obj.push_back(Pair("version", nVersion));
-    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
-    obj.push_back(Pair("reason", (int)nReason));
-    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }

@@ -123,7 +123,7 @@ static bool SelectBlockFromCandidates(
             *pindexSelected = (const CBlockIndex*) pindex;
         }
     }
-    if (GetBoolArg("-printstakemodifier", false))
+    if (gArgs.GetBoolArg("-printstakemodifier", false))
         LogPrintf("%s : selection hash=%s\n", __func__, hashBest.ToString().c_str());
     return fSelected;
 }
@@ -157,7 +157,7 @@ bool ComputeNextStakeModifier(const CBlockIndex* pindexCurrent, uint64_t &nStake
     int64_t nModifierTime = 0;
     if (!GetLastStakeModifier(pindexPrev, nStakeModifier, nModifierTime))
         return error("ComputeNextStakeModifier: unable to get last modifier");
-    if (GetBoolArg("-debug", false))
+    if (gArgs.GetBoolArg("-debug", false))
         LogPrintf("ComputeNextStakeModifier: prev modifier=0x%016x time=%s epoch=%u\n", nStakeModifier, DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nModifierTime).c_str(), (unsigned int)nModifierTime);
     if (nModifierTime / params.nModifierInterval >= pindexPrev->GetBlockTime() / params.nModifierInterval)
         return true;
@@ -192,12 +192,12 @@ bool ComputeNextStakeModifier(const CBlockIndex* pindexCurrent, uint64_t &nStake
         nStakeModifierNew |= (((uint64_t)pindex->GetStakeEntropyBit()) << nRound);
         // add the selected block from candidates to selected list
         mapSelectedBlocks.insert(make_pair(pindex->GetBlockHash(), pindex));
-        if (GetBoolArg("-printstakemodifier", false))
+        if (gArgs.GetBoolArg("-printstakemodifier", false))
             LogPrintf("%s : selected round %d stop=%s height=%d bit=%d\n", __func__, nRound, DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nSelectionIntervalStop).c_str(), pindex->nHeight, pindex->GetStakeEntropyBit());
     }
 
     // Print selection map for visualization of the selected blocks
-    if (GetBoolArg("-debug", false) && GetBoolArg("-printstakemodifier", false))
+    if (gArgs.GetBoolArg("-debug", false) && gArgs.GetBoolArg("-printstakemodifier", false))
     {
         string strSelectionMap = "";
         // '-' indicates proof-of-work blocks not selected
@@ -344,12 +344,6 @@ bool CheckStakeKernelHash(unsigned int nBits, CBlockIndex* pindexPrev, const CBl
     if (HardenedStakeChecks()) {
         if (UintToArith256(hashProofOfStake) == 0)
             return false;
-    }
-
-    if (fDebug) {
-        LogPrintf("     - kernmode : %s\n", fKernelMode ? "NEW" : "OLD");
-        LogPrintf("     - hashProof: %s\n", hashProofOfStake.ToString().c_str());
-        LogPrintf("     - nTarget  : %s\n", nTarget.ToString().c_str());
     }
 
     // Now check if proof-of-stake hash meets target protocol

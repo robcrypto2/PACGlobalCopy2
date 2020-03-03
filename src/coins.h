@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <bitset>
+
 #include <unordered_map>
 
 /**
@@ -93,7 +94,7 @@ public:
         bitset.reset(30);
         bitset.reset(31);
         nHeight = bitset.to_ulong();
-        ::Unserialize(s, CTxOutCompressor(out));
+        ::Unserialize(s, REF(CTxOutCompressor(out)));
     }
 
     bool IsSpent() const {

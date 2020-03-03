@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Dash Core developers
+// Copyright (c) 2018-2020 The Dash Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -25,7 +25,7 @@ class CValidationState;
 namespace llmq
 {
     class CFinalCommitment;
-}
+} // namespace llmq
 
 class CDeterministicMNState
 {
@@ -52,7 +52,7 @@ public:
 
 public:
     CDeterministicMNState() {}
-    CDeterministicMNState(const CProRegTx& proTx)
+    explicit CDeterministicMNState(const CProRegTx& proTx)
     {
         keyIDOwner = proTx.keyIDOwner;
         pubKeyOperator.Set(proTx.pubKeyOperator);
@@ -230,7 +230,6 @@ public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
 };
-typedef std::shared_ptr<CDeterministicMN> CDeterministicMNPtr;
 typedef std::shared_ptr<const CDeterministicMN> CDeterministicMNCPtr;
 
 class CDeterministicMNListDiff;
@@ -392,10 +391,6 @@ public:
     {
         return GetMN(proTxHash) != nullptr;
     }
-    bool HasValidMN(const uint256& proTxHash) const
-    {
-        return GetValidMN(proTxHash) != nullptr;
-    }
     bool HasMNByCollateral(const COutPoint& collateralOutpoint) const
     {
         return GetMNByCollateral(collateralOutpoint) != nullptr;
@@ -410,7 +405,6 @@ public:
     CDeterministicMNCPtr GetMNByCollateral(const COutPoint& collateralOutpoint) const;
     CDeterministicMNCPtr GetValidMNByCollateral(const COutPoint& collateralOutpoint) const;
     CDeterministicMNCPtr GetMNByService(const CService& service) const;
-    CDeterministicMNCPtr GetValidMNByService(const CService& service) const;
     CDeterministicMNCPtr GetMNByInternalId(uint64_t internalId) const;
     CDeterministicMNCPtr GetMNPayee() const;
 
@@ -638,7 +632,7 @@ private:
     const CBlockIndex* tipIndex{nullptr};
 
 public:
-    CDeterministicMNManager(CEvoDB& _evoDb);
+    explicit CDeterministicMNManager(CEvoDB& _evoDb);
 
     bool ProcessBlock(const CBlock& block, const CBlockIndex* pindex, CValidationState& state, bool fJustCheck);
     bool UndoBlock(const CBlock& block, const CBlockIndex* pindex);

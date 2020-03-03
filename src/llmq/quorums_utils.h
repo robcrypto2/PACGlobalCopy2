@@ -67,6 +67,6 @@ public:
     }
 };
 
-}
+} // namespace llmq
 
 #endif//PAC_QUORUMS_UTILS_H

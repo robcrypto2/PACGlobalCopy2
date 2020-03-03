@@ -23,13 +23,11 @@ QT_TS = \
   qt/locale/dash_pt.ts \
   qt/locale/dash_ru.ts \
   qt/locale/dash_sk.ts \
-  qt/locale/dash_sv.ts \
   qt/locale/dash_th.ts \
   qt/locale/dash_tr.ts \
   qt/locale/dash_vi.ts \
   qt/locale/dash_zh_CN.ts \
-  qt/locale/dash_zh_TW.ts \
-  qt/locale/dash_ua.ts
+  qt/locale/dash_zh_TW.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
@@ -63,6 +61,7 @@ QT_MOC_CPP = \
   qt/moc_bitcoinamountfield.cpp \
   qt/moc_bitcoingui.cpp \
   qt/moc_bitcoinunits.cpp \
+  qt/moc_callback.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
   qt/moc_coincontroltreewidget.cpp \
@@ -113,6 +112,7 @@ BITCOIN_MM = \
 QT_MOC = \
   qt/dash.moc \
   qt/bitcoinamountfield.moc \
+  qt/callback.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
@@ -135,6 +135,7 @@ BITCOIN_QT_H = \
   qt/bitcoinamountfield.h \
   qt/bitcoingui.h \
   qt/bitcoinunits.h \
+  qt/callback.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
@@ -201,16 +202,13 @@ RES_ICONS = \
   qt/res/icons/clock4.png \
   qt/res/icons/clock5.png \
   qt/res/icons/configure.png \
-  qt/res/icons/connect0.png \
-  qt/res/icons/connect1.png \
-  qt/res/icons/connect2.png \
-  qt/res/icons/connect3.png \
-  qt/res/icons/connect4.png \
+  qt/res/icons/connect0_16.png \
+  qt/res/icons/connect1_16.png \
+  qt/res/icons/connect2_16.png \
+  qt/res/icons/connect3_16.png \
+  qt/res/icons/connect4_16.png \
+  qt/res/icons/console_remove.png \
   qt/res/icons/debugwindow.png \
-  qt/res/icons/editpaste.png \
-  qt/res/icons/address-book.png \
-  qt/res/icons/editcopy.png \
-  qt/res/icons/remove.png \
   qt/res/icons/edit.png \
   qt/res/icons/editcopy.png \
   qt/res/icons/editpaste.png \
@@ -221,7 +219,6 @@ RES_ICONS = \
   qt/res/icons/filesave.png \
   qt/res/icons/hd_disabled.png \
   qt/res/icons/hd_enabled.png \
-  qt/res/icons/history.png \
   qt/res/icons/key.png \
   qt/res/icons/lock_closed.png \
   qt/res/icons/lock_open.png \
@@ -234,7 +231,6 @@ RES_ICONS = \
   qt/res/icons/synced.png \
   qt/res/icons/transaction0.png \
   qt/res/icons/transaction2.png \
-  qt/res/icons/transaction_abandoned.png \
   qt/res/icons/transaction_conflicted.png \
   qt/res/icons/tx_inout.png \
   qt/res/icons/tx_input.png \
@@ -245,6 +241,7 @@ RES_ICONS = \
   qt/res/icons/verify.png \
   qt/res/icons/fontbigger.png \
   qt/res/icons/fontsmaller.png \
+  qt/res/icons/transaction_abandoned.png \
   qt/res/icons/network_disabled.png \
   qt/res/icons/staking_active.png \
   qt/res/icons/staking_inactive.png
@@ -317,26 +314,27 @@ BITCOIN_QT_CPP += $(BITCOIN_QT_WALLET_CPP)
 endif
 
 RES_IMAGES = \
-  qt/res/images/about.png \
-  qt/res/images/splash.png \
-  qt/res/images/splash_testnet.png \
-  qt/res/images/dash_logo_horizontal.png \
-  qt/res/images/unchecked.png \
+  qt/res/images/arrow_down.png \
+  qt/res/images/arrow_down_small.png \
+  qt/res/images/arrow_left_small.png \
+  qt/res/images/arrow_right_small.png \
+  qt/res/images/arrow_up_small.png \
   qt/res/images/checked.png \
-  qt/res/images/downArrow.png \
-  qt/res/images/downArrow_small.png \
-  qt/res/images/upArrow_small.png \
-  qt/res/images/leftArrow_small.png \
-  qt/res/images/rightArrow_small.png \
+  qt/res/images/dash_logo_horizontal.png \
+  qt/res/images/dash_logo_toolbar.png \
   qt/res/images/qtreeview_selected.png \
-  qt/res/images/walletFrame_bg.png
+  qt/res/images/splash.png \
+  qt/res/images/unchecked.png
 
 RES_CSS = \
-  qt/res/css/standard.css
+  qt/res/css/dark.css \
+  qt/res/css/light.css \
+  qt/res/css/scrollbars.css \
+  qt/res/css/trad.css
 
 RES_MOVIES = $(wildcard $(srcdir)/qt/res/movies/spinner-*.png)
 
-BITCOIN_RC = qt/res/pacglobal-qt-res.rc
+BITCOIN_RC = qt/res/dash-qt-res.rc
 
 BITCOIN_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
   -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
@@ -383,7 +381,7 @@ endif
 if ENABLE_ZMQ
 qt_pacglobal_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
-qt_pacglobal_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CONSENSUS) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
+qt_pacglobal_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CONSENSUS) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
   $(BACKTRACE_LIB) $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(BLS_LIBS)
 qt_pacglobal_qt_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
