@@ -617,6 +617,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageGroup(_("InstaPAC options:"));
     strUsage += HelpMessageOpt("-instantsendnotify=<cmd>", _("Execute command when a wallet InstantSend transaction is successfully locked (%s in cmd is replaced by TxID)"));
 
+
     strUsage += HelpMessageGroup(_("Node relay options:"));
     if (showDebug) {
         strUsage += HelpMessageOpt("-acceptnonstdtxn", strprintf("Relay and mine \"non-standard\" transactions (%sdefault: %u)", "testnet/regtest only; ", defaultChainParams->RequireStandard()));
@@ -1276,19 +1277,6 @@ bool AppInitParameterInteraction()
     nConnectTimeout = gArgs.GetArg("-timeout", DEFAULT_CONNECT_TIMEOUT);
     if (nConnectTimeout <= 0)
         nConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
-
-    if (gArgs.IsArgSet("-minrelaytxfee")) {
-        CAmount n = 0;
-        if (!ParseMoney(gArgs.GetArg("-minrelaytxfee", ""), n)) {
-            return InitError(AmountErrMsg("minrelaytxfee", gArgs.GetArg("-minrelaytxfee", "")));
-        }
-        // High fee check is done afterward in CWallet::ParameterInteraction()
-        ::minRelayTxFee = CFeeRate(n);
-    } else if (incrementalRelayFee > ::minRelayTxFee) {
-        // Allow only setting incrementalRelayFee to control both
-        ::minRelayTxFee = incrementalRelayFee;
-        LogPrintf("Increasing minrelaytxfee to %s to match incrementalrelayfee\n",::minRelayTxFee.ToString());
-    }
 
     // Sanity check argument for min fee for including tx in block
     // TODO: Harmonize which arguments need sanity checking and where that happens

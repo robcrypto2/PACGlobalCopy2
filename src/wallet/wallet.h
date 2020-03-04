@@ -51,10 +51,12 @@ static const unsigned int DEFAULT_KEYPOOL_SIZE = 1000;
 //! -paytxfee default
 static const CAmount DEFAULT_TRANSACTION_FEE = 0;
 //! -fallbackfee default
+static const CAmount DEFAULT_FALLBACK_FEELEGACY = 50 * COIN;
 static const CAmount DEFAULT_FALLBACK_FEE = 0.5 * COIN;
 //! -m_discard_rate default
 static const CAmount DEFAULT_DISCARD_FEE = 10000;
 //! -mintxfee default
+static const CAmount DEFAULT_TRANSACTION_MINFEELEGACY = 50 * COIN;
 static const CAmount DEFAULT_TRANSACTION_MINFEE = 0.5 * COIN;
 //! minimum recommended increment for BIP 125 replacement txs
 static const CAmount WALLET_INCREMENTAL_RELAY_FEE = 5000;
@@ -1093,6 +1095,7 @@ public:
     bool CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign = true, int nExtraPayloadSize = 0);
     bool CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, CAmount blockReward, CMutableTransaction& txNew, unsigned int& nTxNewTime, std::vector<const CWalletTx *> &vwtxPrev);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, CConnman* connman, CValidationState& state);
+
     bool CreateCollateralTransaction(CMutableTransaction& txCollateral, std::string& strReason);
     bool ConvertList(std::vector<CTxIn> vecTxIn, std::vector<CAmount>& vecAmounts);
 
