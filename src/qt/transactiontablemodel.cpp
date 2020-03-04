@@ -402,6 +402,10 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
     {
     case TransactionRecord::RecvWithAddress:
         return tr("Received with");
+    case TransactionRecord::MNReward:
+        return tr("Masternode Reward");
+    case TransactionRecord::StakeMint:
+        return tr("Minted");
     case TransactionRecord::RecvFromOther:
         return tr("Received from");
     case TransactionRecord::RecvWithPrivateSend:
@@ -464,6 +468,8 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::RecvWithPrivateSend:
     case TransactionRecord::SendToAddress:
+    case TransactionRecord::MNReward:
+    case TransactionRecord::StakeMint:
     case TransactionRecord::Generated:
     case TransactionRecord::PrivateSend:
         return formatAddressLabel(wtx->strAddress, wtx->status.label, tooltip) + watchAddress;
@@ -482,6 +488,8 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
     {
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::SendToAddress:
+    case TransactionRecord::StakeMint:
+    case TransactionRecord::MNReward:
     case TransactionRecord::Generated:
     case TransactionRecord::PrivateSend:
     case TransactionRecord::RecvWithPrivateSend:
