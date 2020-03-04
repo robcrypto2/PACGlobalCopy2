@@ -411,7 +411,6 @@ crypto_libpacglobal_crypto_base_a_SOURCES = \
   crypto/sha1.cpp \
   crypto/sha1.h \
   crypto/sha256.cpp \
-  crypto/sha256_sse4.cpp \
   crypto/sha256.h \
   crypto/sha512.cpp \
   crypto/sha512.h
@@ -640,7 +639,7 @@ pacglobal_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(CRYPTO_LIBS) $(BLS_LIBS)
 # pacglobalconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/dashconsensus.h
-libpacglobalconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libpacglobal_crypto_a_SOURCES) $(libpacglobal_consensus_a_SOURCES)
+libpacglobalconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libpacglobal_crypto_base_a_SOURCES) $(libpacglobal_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
   libpacglobalconsensus_la_SOURCES += compat/glibc_compat.cpp
