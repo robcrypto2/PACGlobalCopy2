@@ -15,6 +15,7 @@
 #include "net.h"
 #include "net_processing.h"
 #include "primitives/block.h"
+#include "ui_interface.h"
 #include "validation.h"
 
 namespace llmq
@@ -267,7 +268,7 @@ void CQuorumBlockProcessor::UpgradeDB()
         return;
     }
 
-    LogPrintf("CQuorumBlockProcessor::%s -- Upgrading DB...\n", __func__);
+    uiInterface.InitMessage(_("Upgrading evoDB... (please standby)"));
 
     if (chainActive.Height() >= Params().GetConsensus().DIP0003EnforcementHeight) {
         auto pindex = chainActive[Params().GetConsensus().DIP0003EnforcementHeight];
