@@ -6,6 +6,12 @@ padding-top:20px;
 padding-bottom: 20px;
 }
 
+QToolTip {
+color: #000000;
+background-color: #ffffff;
+border: 0px;
+}
+
 QStatusBar {
 background-color:#ffffff;
 }

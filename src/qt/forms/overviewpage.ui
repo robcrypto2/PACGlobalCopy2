@@ -598,7 +598,7 @@
        <item>
         <widget class="QFrame" name="frame_2">
          <property name="styleSheet">
-          <string notr="true">background-color: transparent;</string>
+          <string notr="true">QToolTip { color: #000000; background-color: #ffffff; border: 0px; } QListView { background-color: transparent; }</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
