@@ -109,7 +109,6 @@ std::atomic<bool> fDIP0003ActiveAtTip{false};
 uint256 hashAssumeValid;
 arith_uint256 nMinimumChainWork;
 
-CFeeRate minRelayTxFee = CFeeRate(DEFAULT_MIN_RELAY_TX_FEE);
 CAmount maxTxFee = DEFAULT_TRANSACTION_MAXFEE;
 
 CBlockPolicyEstimator feeEstimator;
@@ -618,6 +617,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         CCoinsView dummy;
         CCoinsViewCache view(&dummy);
 
+        CAmount nValueIn = 0;
         LockPoints lp;
         {
         LOCK(pool.cs);
@@ -648,6 +648,8 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         // Bring the best block into scope
         view.GetBestBlock();
 
+        nValueIn = view.GetValueIn(tx);
+
         // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
         view.SetBackend(dummy);
 
@@ -672,6 +674,8 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
 
         unsigned int nSigOps = GetTransactionSigOpCount(tx, view, STANDARD_SCRIPT_VERIFY_FLAGS);
 
+        CAmount nValueOut = tx.GetValueOut();
+        nFees = nValueIn-nValueOut;
         // nModifiedFees includes any fee deltas from PrioritiseTransaction
         CAmount nModifiedFees = nFees;
         pool.ApplyDelta(hash, nModifiedFees);
@@ -706,14 +710,9 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         }
 
         // No transactions are allowed below minRelayTxFee except from disconnected blocks
-        if (fLimitFree && nModifiedFees < ::minRelayTxFee.GetFee(nSize)) {
+        if (fLimitFree && nModifiedFees < MinRelayFee().GetFee(nSize)) {
             return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "min relay fee not met");
         }
-
-        if (nAbsurdFee && nFees > nAbsurdFee)
-            return state.Invalid(false,
-                REJECT_HIGHFEE, "absurdly-high-fee",
-                strprintf("%d > %d", nFees, nAbsurdFee));
 
         // Calculate in-mempool ancestors, up to a limit.
         CTxMemPool::setEntries setAncestors;
@@ -4030,6 +4029,8 @@ CBlockIndex * InsertBlockIndex(uint256 hash)
 
     // Create new
     CBlockIndex* pindexNew = new CBlockIndex();
+    if (!pindexNew)
+        throw std::runtime_error(std::string(__func__) + ": new CBlockIndex failed");
     mi = mapBlockIndex.insert(std::make_pair(hash, pindexNew)).first;
     pindexNew->phashBlock = &((*mi).first);
 
@@ -4800,8 +4801,6 @@ std::string CBlockFileInfo::ToString() const {
 
 CBlockFileInfo* GetBlockFileInfo(size_t n)
 {
-    LOCK(cs_LastBlockFile);
-
     return &vinfoBlockFile.at(n);
 }
 
@@ -4837,9 +4836,8 @@ bool LoadMempool(void)
     }
 
     int64_t count = 0;
-    int64_t expired = 0;
+    int64_t skipped = 0;
     int64_t failed = 0;
-    int64_t already_there = 0;
     int64_t nNow = GetTime();
 
     try {
@@ -4869,18 +4867,10 @@ bool LoadMempool(void)
                 if (state.IsValid()) {
                     ++count;
                 } else {
-                    // mempool may contain the transaction already, e.g. from
-                    // wallet(s) having loaded it while we were processing
-                    // mempool transactions; consider these as valid, instead of
-                    // failed, but mark them as 'already there'
-                    if (mempool.exists(tx->GetHash())) {
-                        ++already_there;
-                    } else {
-                        ++failed;
-                    }
+                    ++failed;
                 }
             } else {
-                ++expired;
+                ++skipped;
             }
             if (ShutdownRequested())
                 return false;
@@ -4896,11 +4886,11 @@ bool LoadMempool(void)
         return false;
     }
 
-    LogPrintf("Imported mempool transactions from disk: %i succeeded, %i failed, %i expired, %i already there\n", count, failed, expired, already_there);
+    LogPrintf("Imported mempool transactions from disk: %i successes, %i failed, %i expired\n", count, failed, skipped);
     return true;
 }
 
-bool DumpMempool(void)
+void DumpMempool(void)
 {
     int64_t start = GetTimeMicros();
 
@@ -4920,7 +4910,7 @@ bool DumpMempool(void)
     try {
         FILE* filestr = fsbridge::fopen(GetDataDir() / "mempool.dat.new", "wb");
         if (!filestr) {
-            return false;
+            return;
         }
 
         CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
@@ -4941,12 +4931,10 @@ bool DumpMempool(void)
         file.fclose();
         RenameOver(GetDataDir() / "mempool.dat.new", GetDataDir() / "mempool.dat");
         int64_t last = GetTimeMicros();
-        LogPrintf("Dumped mempool: %gs to copy, %gs to dump\n", (mid-start)*1000, (last-mid)*1000);
+        LogPrintf("Dumped mempool: %gs to copy, %gs to dump\n", (mid-start)*0.000001, (last-mid)*0.000001);
     } catch (const std::exception& e) {
         LogPrintf("Failed to dump mempool: %s. Continuing anyway.\n", e.what());
-        return false;
     }
-    return true;
 }
 
 //! Guess how far we are in the verification process at the given block index
