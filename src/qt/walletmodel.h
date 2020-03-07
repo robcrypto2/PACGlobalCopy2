@@ -125,7 +125,6 @@ public:
     {
         Unencrypted,            // !wallet->IsCrypted()
         Locked,                 // wallet->IsCrypted() && wallet->IsLocked(true)
-        UnlockedForMixingOnly,  // wallet->IsCrypted() && !wallet->IsLocked(true) && wallet->IsLocked()
         UnlockedForStakingOnly, // wallet->IsCrypted() && !wallet->IsLocked() && wallet->fWalletUnlockStakingOnly
         Unlocked,               // wallet->IsCrypted() && !wallet->IsLocked()
     };
