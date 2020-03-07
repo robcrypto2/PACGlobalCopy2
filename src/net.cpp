@@ -1517,11 +1517,7 @@ void CConnman::ThreadSocketHandler()
                 }
             }
         }
-        {
-            LOCK(cs_vNodes);
-            for (CNode* pnode : vNodesCopy)
-                pnode->Release();
-        }
+        ReleaseNodeVector(vNodesCopy);
     }
 }
 

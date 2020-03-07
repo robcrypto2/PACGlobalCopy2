@@ -2325,7 +2325,6 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         if (!pblocktree->WriteTimestampIndex(CTimestampIndexKey(pindex->nTime, pindex->GetBlockHash())))
             return AbortNode(state, "Failed to write timestamp index");
 
-    assert(pindex->phashBlock);
     // add this block to the view's block chain
     view.SetBestBlock(pindex->GetBlockHash());
 
@@ -2387,7 +2386,7 @@ bool static FlushStateToDisk(const CChainParams& chainparams, CValidationState &
         }
         int64_t nMempoolSizeMax = gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
         int64_t cacheSize = pcoinsTip->DynamicMemoryUsage();
-    cacheSize += evoDb->GetMemoryUsage();
+        cacheSize += evoDb->GetMemoryUsage();
         int64_t nTotalSpace = nCoinCacheUsage + std::max<int64_t>(nMempoolSizeMax - nMempoolUsage, 0);
         // The cache is large and we're within 10% and 10 MiB of the limit, but we have time now (not in the middle of a block processing).
         bool fCacheLarge = mode == FLUSH_STATE_PERIODIC && cacheSize > std::max((9 * nTotalSpace) / 10, nTotalSpace - MAX_BLOCK_COINSDB_USAGE * 1024 * 1024);
@@ -3823,8 +3822,6 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
 /* Calculate the amount of disk space the block & undo files currently use */
 static uint64_t CalculateCurrentUsage()
 {
-    LOCK(cs_LastBlockFile);
-
     uint64_t retval = 0;
     for (const CBlockFileInfo &file : vinfoBlockFile) {
         retval += file.nSize + file.nUndoSize;
@@ -3835,8 +3832,6 @@ static uint64_t CalculateCurrentUsage()
 /* Prune a block file (modify associated database entries)*/
 void PruneOneBlockFile(const int fileNumber)
 {
-    LOCK(cs_LastBlockFile);
-
     for (BlockMap::iterator it = mapBlockIndex.begin(); it != mapBlockIndex.end(); ++it) {
         CBlockIndex* pindex = it->second;
         if (pindex->nFile == fileNumber) {
@@ -3986,7 +3981,7 @@ static FILE* OpenDiskFile(const CDiskBlockPos &pos, const char *prefix, bool fRe
         return nullptr;
     fs::path path = GetBlockPosFilename(pos, prefix);
     fs::create_directories(path.parent_path());
-    FILE* file = fsbridge::fopen(path, fReadOnly ? "rb": "rb+");
+    FILE* file = fsbridge::fopen(path, "rb+");
     if (!file && !fReadOnly)
         file = fsbridge::fopen(path, "wb+");
     if (!file) {
