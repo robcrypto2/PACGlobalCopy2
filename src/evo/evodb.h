@@ -43,7 +43,7 @@ private:
     CurTransaction curDBTransaction;
 
 public:
-    explicit CEvoDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+    CEvoDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
 
     std::unique_ptr<CEvoDBScopedCommitter> BeginTransaction()
     {

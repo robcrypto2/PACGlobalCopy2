@@ -33,7 +33,7 @@ public:
 
 public:
     CSimplifiedMNListEntry() {}
-    explicit CSimplifiedMNListEntry(const CDeterministicMN& dmn);
+    CSimplifiedMNListEntry(const CDeterministicMN& dmn);
 
     bool operator==(const CSimplifiedMNListEntry& rhs) const
     {
@@ -78,8 +78,8 @@ public:
 
 public:
     CSimplifiedMNList() {}
-    explicit CSimplifiedMNList(const std::vector<CSimplifiedMNListEntry>& smlEntries);
-    explicit CSimplifiedMNList(const CDeterministicMNList& dmnList);
+    CSimplifiedMNList(const std::vector<CSimplifiedMNListEntry>& smlEntries);
+    CSimplifiedMNList(const CDeterministicMNList& dmnList);
 
     uint256 CalcMerkleRoot(bool* pmutated = nullptr) const;
 };
