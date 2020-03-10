@@ -225,7 +225,7 @@ bool ComputeNextStakeModifier(const CBlockIndex* pindexCurrent, uint64_t &nStake
     return true;
 }
 
-static bool GetKernelStakeModifier(CBlockIndex* pindexPrev, uint256 hashBlockFrom, unsigned int nTimeTx, uint64_t& nStakeModifier, int& nStakeModifierHeight, int64_t& nStakeModifierTime, bool fPrintProofOfStake)
+static bool GetKernelStakeModifier(const CBlockIndex* pindexPrev, uint256 hashBlockFrom, unsigned int nTimeTx, uint64_t& nStakeModifier, int& nStakeModifierHeight, int64_t& nStakeModifierTime, bool fPrintProofOfStake)
 {
     const Consensus::Params& params = Params().GetConsensus();
     nStakeModifier = 0;
@@ -242,10 +242,10 @@ static bool GetKernelStakeModifier(CBlockIndex* pindexPrev, uint256 hashBlockFro
     // So, we construct a temporary chain that we will iterate over.
     // pindexFrom - this block contains coins that are used to generate PoS
     // pindexPrev - this is a block that is previous to PoS block that we are checking, you can think of it as tip of our chain
-    std::vector<CBlockIndex*> tmpChain;
+    std::vector<const CBlockIndex*> tmpChain;
     int32_t nDepth = pindexPrev->nHeight - (pindexFrom->nHeight-1); // -1 is used to also include pindexFrom
     tmpChain.reserve(nDepth);
-    CBlockIndex* it = pindexPrev;
+    const CBlockIndex* it = pindexPrev;
     for (int i=1; i<=nDepth && !chainActive.Contains(it); i++) {
         tmpChain.push_back(it);
         it = it->pprev;
@@ -278,14 +278,14 @@ static bool GetKernelStakeModifier(CBlockIndex* pindexPrev, uint256 hashBlockFro
     return true;
 }
 
-bool StakeKernelMode(CBlockIndex* pindexPrev)
+bool StakeKernelMode(const CBlockIndex* pindexPrev)
 {
     if (pindexPrev->nHeight < Params().GetConsensus().nHardenedStakeCheckHeight)
         return false;
     return true;
 }
 
-bool CheckStakeKernelHash(unsigned int nBits, CBlockIndex* pindexPrev, const CBlockHeader& blockFrom, unsigned int nTxPrevOffset, const CTransactionRef& txPrev, const COutPoint& prevout, unsigned int nTimeTx, uint256& hashProofOfStake, bool fMinting, bool fValidate)
+bool CheckStakeKernelHash(unsigned int nBits, const CBlockIndex* pindexPrev, const CBlockHeader& blockFrom, unsigned int nTxPrevOffset, const CTransactionRef& txPrev, const COutPoint& prevout, unsigned int nTimeTx, uint256& hashProofOfStake, bool fMinting, bool fValidate)
 {
     // sanity checks
     auto txPrevTime = blockFrom.GetBlockTime();
@@ -380,7 +380,7 @@ bool CheckKernelScript(CScript scriptVin, CScript scriptVout)
 }
 
 // Check kernel hash target and coinstake signature
-bool CheckProofOfStake(const CBlock &block, uint256& hashProofOfStake, CBlockIndex* pindexPrev)
+bool CheckProofOfStake(const CBlock &block, uint256& hashProofOfStake, const CBlockIndex* pindexPrev)
 {
     const CTransactionRef &tx = block.vtx[1];
     if (!tx->IsCoinStake())

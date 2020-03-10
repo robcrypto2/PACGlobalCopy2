@@ -81,6 +81,33 @@ typedef unsigned int SOCKET;
 #else
 #define MAX_PATH            1024
 #endif
+#ifdef _MSC_VER
+#if !defined(ssize_t)
+#ifdef _WIN64
+typedef int64_t ssize_t;
+#else
+typedef int32_t ssize_t;
+#endif
+#endif
+#endif
+
+#if HAVE_DECL_STRNLEN == 0
+size_t strnlen( const char *start, size_t max_len);
+#endif // HAVE_DECL_STRNLEN
+
+#ifndef WIN32
+typedef void* sockopt_arg_type;
+#else
+typedef char* sockopt_arg_type;
+#endif
+
+bool static inline IsSelectableSocket(const SOCKET& s) {
+#ifdef WIN32
+    return true;
+#else
+    return (s < FD_SETSIZE);
+#endif
+}
 
 #ifndef WIN32
 // PRIO_MAX is not defined on Solaris
@@ -92,22 +119,5 @@ typedef unsigned int SOCKET;
 #define THREAD_PRIORITY_NORMAL          0
 #define THREAD_PRIORITY_ABOVE_NORMAL    (-2)
 #endif
-
-// As Solaris does not have the MSG_NOSIGNAL flag for send(2) syscall, it is defined as 0
-#if !defined(HAVE_MSG_NOSIGNAL) && !defined(MSG_NOSIGNAL)
-#define MSG_NOSIGNAL 0
-#endif
-
-#if HAVE_DECL_STRNLEN == 0
-size_t strnlen( const char *start, size_t max_len);
-#endif // HAVE_DECL_STRNLEN
-
-bool static inline IsSelectableSocket(const SOCKET& s) {
-#ifdef WIN32
-    return true;
-#else
-    return (s < FD_SETSIZE);
-#endif
-}
 
 #endif // BITCOIN_COMPAT_H

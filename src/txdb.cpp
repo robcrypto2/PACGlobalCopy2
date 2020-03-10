@@ -245,11 +245,7 @@ bool CBlockTreeDB::HasTxIndex(const uint256& txid) {
 }
 
 bool CBlockTreeDB::ReadTxIndex(const uint256 &txid, CDiskTxPos &pos) {
-    bool fResult = Read(std::make_pair(DB_TXINDEX, txid), pos);
-    if (!fResult) {
-        LogPrintf("Couldn't retrieve %s\n", txid.ToString().c_str());
-    }
-    return fResult;
+    return Read(std::make_pair(DB_TXINDEX, txid), pos);
 }
 
 bool CBlockTreeDB::WriteTxIndex(const std::vector<std::pair<uint256, CDiskTxPos> >&vect) {
@@ -437,8 +433,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nStakeTime       = diskindex.nStakeTime;
                 pindexNew->hashProofOfStake = diskindex.hashProofOfStake;
 
-                if (pindexNew->nNonce != uint32_t(0) &&
-                    !CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
+                if (diskindex.nNonce && !CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
                     return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
 
                 pcursor->Next();
