@@ -1,12 +1,11 @@
 #include "clientversion.h"
-#include "dbwrapper.h"
 #include "streams.h"
+#include "dbwrapper.h"
+#include "lmdb/liblmdb/lmdb.h"
 #include "lmdb/wrapper/lmdbwrapper.h"
 #include "lmdb/wrapper/dbresizemanager.h"
 #include "lmdb/wrapper/lmdbutil.h"
 #include "util.h"
-
-#include "lmdb/liblmdb/lmdb.h"
 
 #include <boost/filesystem.hpp>
 #include <mutex>

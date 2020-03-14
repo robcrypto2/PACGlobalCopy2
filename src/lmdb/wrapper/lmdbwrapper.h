@@ -3,6 +3,10 @@
 
 #include "config/pacglobal-config.h"
 
+#include "dbwrapper.h"
+#include "lmdb/wrapper/lmdbwrapper.h"
+#include "lmdb/liblmdb/lmdb.h"
+
 #include <memory>
 #include <cstddef>
 #include <stdexcept>

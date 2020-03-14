@@ -397,11 +397,11 @@ public:
 
 };
 
-template<typename CDBTransaction>
-class CDBTransactionIterator
+template<typename LMDBTransaction>
+class LMDBTransactionIterator
 {
 private:
-    CDBTransaction& transaction;
+    LMDBTransaction& transaction;
 
     typedef typename std::remove_pointer<decltype(transaction.parent.NewIterator())>::type ParentIterator;
 
@@ -409,13 +409,13 @@ private:
     // At all times, only one of both provides the current value. The decision is made by comparing the current keys
     // of both iterators, so that always the smaller key is the current one. On Next(), the previously chosen iterator
     // is advanced.
-    typename CDBTransaction::WritesMap::iterator transactionIt;
+    typename LMDBTransaction::WritesMap::iterator transactionIt;
     std::unique_ptr<ParentIterator> parentIt;
     CDataStream parentKey;
     bool curIsParent{false};
 
 public:
-    CDBTransactionIterator(CDBTransaction& _transaction) :
+    LMDBTransactionIterator(LMDBTransaction& _transaction) :
             transaction(_transaction),
             parentKey(SER_DISK, CLIENT_VERSION)
     {
@@ -432,7 +432,7 @@ public:
 
     template<typename K>
     void Seek(const K& key) {
-        Seek(CDBTransaction::KeyToDataStream(key));
+        Seek(LMDBTransaction::KeyToDataStream(key));
     }
 
     void Seek(const CDataStream& ssKey) {
@@ -539,7 +539,7 @@ private:
         } else if (transactionIt == transaction.writes.end() && parentIt->Valid()) {
             curIsParent = true;
         } else if (transactionIt != transaction.writes.end() && parentIt->Valid()) {
-            if (CDBTransaction::DataStreamCmp::less(transactionIt->first, parentKey)) {
+            if (LMDBTransaction::DataStreamCmp::less(transactionIt->first, parentKey)) {
                 curIsParent = false;
             } else {
                 curIsParent = true;
@@ -549,8 +549,8 @@ private:
 };
 
 template<typename Parent, typename CommitTarget>
-class CDBTransaction {
-    friend class CDBTransactionIterator<CDBTransaction>;
+class LMDBTransaction {
+    friend class LMDBTransactionIterator<LMDBTransaction>;
 
 protected:
     Parent &parent;
@@ -603,7 +603,7 @@ protected:
     DeletesSet deletes;
 
 public:
-    CDBTransaction(Parent &_parent, CommitTarget &_commitTarget) : parent(_parent), commitTarget(_commitTarget) {}
+    LMDBTransaction(Parent &_parent, CommitTarget &_commitTarget) : parent(_parent), commitTarget(_commitTarget) {}
 
     template <typename K, typename V>
     void Write(const K& key, const V& v) {
@@ -708,7 +708,7 @@ public:
             // something went wrong when we accounted/calculated used memory...
             static volatile bool didPrint = false;
             if (!didPrint) {
-                LogPrintf("CDBTransaction::%s -- negative memoryUsage (%d)", __func__, memoryUsage);
+                LogPrintf("LMDBTransaction::%s -- negative memoryUsage (%d)", __func__, memoryUsage);
                 didPrint = true;
             }
             return 0;
@@ -716,11 +716,11 @@ public:
         return (size_t)memoryUsage;
     }
 
-    CDBTransactionIterator<CDBTransaction>* NewIterator() {
-        return new CDBTransactionIterator<CDBTransaction>(*this);
+    LMDBTransactionIterator<LMDBTransaction>* NewIterator() {
+        return new LMDBTransactionIterator<LMDBTransaction>(*this);
     }
-    std::unique_ptr<CDBTransactionIterator<CDBTransaction>> NewIteratorUniquePtr() {
-        return std::make_unique<CDBTransactionIterator<CDBTransaction>>(*this);
+    std::unique_ptr<LMDBTransactionIterator<LMDBTransaction>> NewIteratorUniquePtr() {
+        return std::make_unique<LMDBTransactionIterator<LMDBTransaction>>(*this);
     }
 };
 

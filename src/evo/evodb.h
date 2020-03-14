@@ -5,7 +5,9 @@
 #ifndef DASH_EVODB_H
 #define DASH_EVODB_H
 
-#include "dbwrapper.h"
+#include "lmdb/wrapper/lmdbwrapper.cpp"
+#include "lmdb/liblmdb/lmdb.h"
+#include "lmdb/wrapper/lmdbwrapper.h"
 #include "sync.h"
 #include "uint256.h"
 
@@ -33,12 +35,12 @@ class CEvoDB
 {
 private:
     CCriticalSection cs;
-    CDBWrapper db;
+    LMDBWrapper db;
 
-    typedef CDBTransaction<CDBWrapper, CDBBatch> RootTransaction;
-    typedef CDBTransaction<RootTransaction, RootTransaction> CurTransaction;
+    typedef LMDBTransaction<LMDBWrapper, LMDBBatch> RootTransaction;
+    typedef LMDBTransaction<RootTransaction, RootTransaction> CurTransaction;
 
-    CDBBatch rootBatch;
+    LMDBBatch rootBatch;
     RootTransaction rootDBTransaction;
     CurTransaction curDBTransaction;
 
@@ -84,7 +86,7 @@ public:
         curDBTransaction.Erase(key);
     }
 
-    CDBWrapper& GetRawDB()
+    LMDBWrapper& GetRawDB()
     {
         return db;
     }

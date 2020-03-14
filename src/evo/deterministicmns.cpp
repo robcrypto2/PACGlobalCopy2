@@ -1008,7 +1008,7 @@ void CDeterministicMNManager::CleanupCache(int nHeight)
     }
 }
 
-bool CDeterministicMNManager::UpgradeDiff(CDBBatch& batch, const CBlockIndex* pindexNext, const CDeterministicMNList& curMNList, CDeterministicMNList& newMNList)
+bool CDeterministicMNManager::UpgradeDiff(LMDBBatch& batch, const CBlockIndex* pindexNext, const CDeterministicMNList& curMNList, CDeterministicMNList& newMNList)
 {
     CDataStream oldDiffData(SER_DISK, CLIENT_VERSION);
     if (!evoDb.GetRawDB().ReadDataStream(std::make_pair(DB_LIST_DIFF, pindexNext->GetBlockHash()), oldDiffData)) {
@@ -1087,7 +1087,7 @@ void CDeterministicMNManager::UpgradeDBIfNeeded()
 
     LogPrintf("CDeterministicMNManager::%s -- upgrading DB to use compact diffs\n", __func__);
 
-    CDBBatch batch(evoDb.GetRawDB());
+    LMDBBatch batch(evoDb.GetRawDB());
 
     CDeterministicMNList curMNList;
     curMNList.SetHeight(Params().GetConsensus().DIP0003Height - 1);

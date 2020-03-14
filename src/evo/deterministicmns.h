@@ -8,6 +8,8 @@
 #include "arith_uint256.h"
 #include "bls/bls.h"
 #include "dbwrapper.h"
+#include "lmdb/wrapper/lmdbwrapper.h"
+#include "lmdb/liblmdb/lmdb.h"
 #include "evodb.h"
 #include "providertx.h"
 #include "simplifiedmns.h"
@@ -21,6 +23,7 @@
 class CBlock;
 class CBlockIndex;
 class CValidationState;
+class LMDBBatch;
 
 namespace llmq
 {
@@ -654,7 +657,7 @@ public:
 
 public:
     // TODO these can all be removed in a future version
-    bool UpgradeDiff(CDBBatch& batch, const CBlockIndex* pindexNext, const CDeterministicMNList& curMNList, CDeterministicMNList& newMNList);
+    bool UpgradeDiff(LMDBBatch& batch, const CBlockIndex* pindexNext, const CDeterministicMNList& curMNList, CDeterministicMNList& newMNList);
     void UpgradeDBIfNeeded();
 
 private:
