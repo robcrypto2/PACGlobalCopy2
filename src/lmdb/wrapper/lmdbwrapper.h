@@ -7,14 +7,14 @@
 #include <cstddef>
 #include <stdexcept>
 
-class CDBWrapper;
+class LMDBWrapper;
 namespace boost { namespace filesystem { class path; } }
 
 namespace lmdb {
 
-std::unique_ptr<CDBWrapper> CreateLMDB(
-        const boost::filesystem::path& path,
-        bool fMemory = false, bool fWipe = false, bool fSafeMode = true);
+//  std::unique_ptr<CDBWrapper> CreateLMDB(
+//          const boost::filesystem::path& path,
+//          bool fMemory = false, bool fWipe = false, bool fSafeMode = true);
 
 } // ns lmdb
 

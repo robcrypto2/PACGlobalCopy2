@@ -1,4 +1,6 @@
+#include "clientversion.h"
 #include "dbwrapper.h"
+#include "streams.h"
 #include "lmdb/wrapper/lmdbwrapper.h"
 #include "lmdb/wrapper/dbresizemanager.h"
 #include "lmdb/wrapper/lmdbutil.h"
@@ -32,7 +34,7 @@ void WipeLMDB(const boost::filesystem::path& path) {
     }
 }
 
-class LMDBBatch : public CDBBatch {
+class LMDBBatch {
 public:
     LMDBBatch(DBResizeManager& resizemg, MDB_env* env, MDB_dbi* dbi) :
         resizemg(resizemg), txn(nullptr), dbi(dbi), env(env), size_estimate(0)
@@ -44,22 +46,22 @@ public:
         if (txn == nullptr)
             return;
 
-        LogPrint(Log::DB, "%s aborting uncommited txn\n", __func__);
+        LogPrint(BCLog::DB, "%s aborting uncommited txn\n", __func__);
         resizemg.txn_abort(txn);
         txn = nullptr;
     }
 
-    void Clear() override {
+    void Clear() {
         size_estimate = 0;
         if (txn != nullptr) {
-            LogPrint(Log::DB, "%s uncommited txn cleared\n", __func__);
+            LogPrint(BCLog::DB, "%s uncommited txn cleared\n", __func__);
             resizemg.txn_abort(txn);
             txn = nullptr;
         }
         resizemg.txn_begin(env, &txn);
     }
 
-    size_t SizeEstimate() const override {
+    size_t SizeEstimate() const {
         return size_estimate;
     }
 
@@ -72,7 +74,7 @@ public:
     }
 
 protected:
-    void Write(const CDataStream& key, const CDataStream& value) override {
+    void Write(const CDataStream& key, const CDataStream& value) {
         assert(txn);
         MDB_val slKey(to_mdbval(key));
         MDB_val slValue(to_mdbval(value));
@@ -83,7 +85,7 @@ protected:
         size_estimate += key.size() + value.size();
     }
 
-    void Erase(const CDataStream& key) override {
+    void Erase(const CDataStream& key) {
         assert(txn);
         MDB_val slKey(to_mdbval(key));
         int status = mdb_del(txn, *dbi, &slKey, NULL);
@@ -106,7 +108,7 @@ private:
     LMDBBatch& operator=(const LMDBBatch&) = delete;
 };
 
-class LMDBIterator : public CDBIterator {
+class LMDBIterator {
 public:
     LMDBIterator(MDB_cursor* cursor) : cursor(cursor), valid(false) {
     }
@@ -114,9 +116,9 @@ public:
         mdb_cursor_close(cursor);
     }
 
-    bool Valid() override { return valid; }
+    bool Valid() { return valid; }
 
-    void SeekToFirst() override {
+    void SeekToFirst() {
         int status = mdb_cursor_get(cursor, &key, &value, MDB_FIRST);
         if (status != MDB_NOTFOUND) {
             LMDB_RC_CHECK(status);
@@ -124,7 +126,7 @@ public:
         valid = status == MDB_SUCCESS;
     }
 
-    void Seek(const CDataStream& ssKey) override {
+    void Seek(const CDataStream& ssKey) {
         key.mv_data = const_cast<char*>(ssKey.data());
         key.mv_size = ssKey.size();
         int status = mdb_cursor_get(cursor, &key, &value, MDB_SET_RANGE);
@@ -134,7 +136,7 @@ public:
         valid = status == MDB_SUCCESS;
     }
 
-    void Next() override {
+    void Next() {
         int status = mdb_cursor_get(cursor, &key, &value, MDB_NEXT);
         if (status != MDB_NOTFOUND) {
             LMDB_RC_CHECK(status);
@@ -142,26 +144,26 @@ public:
         valid = status == MDB_SUCCESS;
     }
 
-    CDataStream GetKey() override {
+    CDataStream GetKey() {
         assert(valid);
         return CDataStream(static_cast<const char*>(key.mv_data),
                            static_cast<const char*>(key.mv_data) + key.mv_size,
                            SER_DISK, CLIENT_VERSION);
     }
 
-    unsigned int GetKeySize() override {
+    unsigned int GetKeySize() {
         assert(valid);
         return key.mv_size;
     }
 
-    CDataStream GetValue() override {
+    CDataStream GetValue() {
         assert(valid);
         return CDataStream(static_cast<const char*>(value.mv_data),
                            static_cast<const char*>(value.mv_data) + value.mv_size,
                            SER_DISK, CLIENT_VERSION);
     }
 
-    unsigned int GetValueSize() override {
+    unsigned int GetValueSize() {
         assert(valid);
         return value.mv_size;
     }
@@ -175,7 +177,7 @@ private:
     LMDBIterator& operator=(const LMDBIterator&) = delete;
 };
 
-class LMDBWrapper : public CDBWrapper {
+class LMDBWrapper {
 public:
     LMDBWrapper(const boost::filesystem::path& path, bool fMemory, bool fWipe, bool fSafeMode)
         : wipe_on_close(fMemory)
@@ -249,7 +251,7 @@ public:
         }
     }
 
-    bool WriteBatch(CDBBatch& batch, bool fSync = false) override {
+    bool WriteBatch(LMDBBatch& batch, bool fSync = false) {
         // reset readtxn before write
         resizemg->txn_reset(rd_txn);
 
@@ -264,41 +266,39 @@ public:
     }
 
     // not supported by LMDB
-    bool Flush() override {
+    bool Flush() {
         return true;
     }
 
-    bool Sync() override {
+    bool Sync() {
         int forceSync = 1;
         LMDB_RC_CHECK(mdb_env_sync(env, forceSync));
         return true;
     }
 
-    CDBIterator* NewIterator() override {
+    LMDBIterator* NewIterator() {
         MDB_cursor* cursor;
         LMDB_RC_CHECK(mdb_cursor_open(rd_txn, dbi, &cursor));
         return new LMDBIterator(cursor);
     }
 
-    std::unique_ptr<CDBBatch> NewBatch() override {
-        return std::unique_ptr<CDBBatch>(new LMDBBatch(*resizemg, env, &dbi));
+    std::unique_ptr<LMDBBatch> NewBatch() {
+        return std::unique_ptr<LMDBBatch>(new LMDBBatch(*resizemg, env, &dbi));
     }
 
 protected:
-    CDataStream Read(const CDataStream& key) const override {
+    CDataStream Read(const CDataStream& key) const {
         MDB_val slKey(to_mdbval(key));
         MDB_val value;
         int status = mdb_get(rd_txn, dbi, &slKey, &value);
-        if (status == MDB_NOTFOUND) {
-            throw dbwrapper_notfound{};
-        }
+        assert(status != MDB_NOTFOUND);
         LMDB_RC_CHECK(status);
         return CDataStream(static_cast<const char*>(value.mv_data),
                            static_cast<const char*>(value.mv_data) + value.mv_size,
                            SER_DISK, CLIENT_VERSION);
     }
 
-    bool Exists(const CDataStream& key) const override {
+    bool Exists(const CDataStream& key) const {
         MDB_val slKey(to_mdbval(key));
         MDB_val value;
         int status = mdb_get(rd_txn, dbi, &slKey, &value);
@@ -330,9 +330,10 @@ private:
 
 } // ns anon
 
-std::unique_ptr<CDBWrapper> CreateLMDB(
-        const boost::filesystem::path& path,
-        bool fMemory, bool fWipe, bool fSafeMode) {
-    return std::unique_ptr<CDBWrapper>(new LMDBWrapper(path, fMemory, fWipe, fSafeMode));
-}
+//  std::unique_ptr<CDBWrapper> CreateLMDB(
+//          const boost::filesystem::path& path,
+//          bool fMemory, bool fWipe, bool fSafeMode) {
+//      return std::unique_ptr<CDBWrapper>(new LMDBWrapper(path, fMemory, fWipe, fSafeMode));
+//  }
+
 } // ns lmdb

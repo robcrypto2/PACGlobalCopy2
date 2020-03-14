@@ -60,7 +60,7 @@ void DBResizeManager::ResizeIfNeeded(MDB_env* env) {
     const uint64_t used = stat.ms_psize * info.me_last_pgno;
 
     const bool need_resize = NeedResize(used, old_max);
-    LogPrint(Log::DB, "lmdb: mapsize: %d, used %d, need resize %s\n",
+    LogPrint(BCLog::DB, "lmdb: mapsize: %d, used %d, need resize %s\n",
         old_max, used, need_resize ? "yes" : "no");
 
     if (!need_resize) {
