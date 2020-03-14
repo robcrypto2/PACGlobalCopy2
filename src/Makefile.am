@@ -191,6 +191,11 @@ BITCOIN_CORE_H = \
   llmq/quorums_signing.h \
   llmq/quorums_signing_shares.h \
   llmq/quorums_utils.h \
+  lmdb/liblmdb/lmdb.h \
+  lmdb/liblmdb/midl.h \
+  lmdb/wrapper/dbresizemanager.h \
+  lmdb/wrapper/lmdbutil.h \
+  lmdb/wrapper/lmdbwrapper.h \
   masternode/activemasternode.h \
   masternode/masternode-meta.h \
   masternode/masternode-payments.h \
@@ -320,6 +325,16 @@ libpacglobal_server_a_SOURCES = \
   llmq/quorums_signing.cpp \
   llmq/quorums_signing_shares.cpp \
   llmq/quorums_utils.cpp \
+  lmdb/liblmdb/mdb.c \
+  lmdb/liblmdb/mdb_copy.c \
+  lmdb/liblmdb/mdb_drop.c \
+  lmdb/liblmdb/mdb_dump.c \
+  lmdb/liblmdb/mdb_load.c \
+  lmdb/liblmdb/mdb_stat.c \
+  lmdb/liblmdb/midl.c \
+  lmdb/wrapper/dbresizemanager.cpp \
+  lmdb/wrapper/lmdbutil.cpp \
+  lmdb/wrapper/lmdbwrapper.cpp \
   masternode/activemasternode.cpp \
   masternode/masternode-meta.cpp \
   masternode/masternode-payments.cpp \
