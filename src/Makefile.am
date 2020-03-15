@@ -152,6 +152,7 @@ BITCOIN_CORE_H = \
   evo/providertx.h \
   evo/simplifiedmns.h \
   evo/specialtx.h \
+  insubordinate.h \
   privatesend/privatesend.h \
   privatesend/privatesend-client.h \
   privatesend/privatesend-server.h \
@@ -307,6 +308,7 @@ libpacglobal_server_a_SOURCES = \
   governance/governance-validators.cpp \
   governance/governance-vote.cpp \
   governance/governance-votedb.cpp \
+  insubordinate.cpp \
   llmq/quorums.cpp \
   llmq/quorums_blockprocessor.cpp \
   llmq/quorums_commitment.cpp \
