@@ -21,7 +21,7 @@ namespace llmq
 class CRecoveredSig
 {
 public:
-    uint8_t llmqType;
+    Consensus::LLMQType llmqType;
     uint256 quorumHash;
     uint256 id;
     uint256 msgHash;
@@ -72,7 +72,7 @@ private:
     unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForHashCache;
 
 public:
-    CRecoveredSigsDb(CDBWrapper& _db);
+    explicit CRecoveredSigsDb(CDBWrapper& _db);
 
     void ConvertInvalidTimeKeys();
     void AddVoteTimeKeys();
@@ -148,7 +148,7 @@ public:
     void PushReconstructedRecoveredSig(const CRecoveredSig& recoveredSig, const CQuorumCPtr& quorum);
 
     // This is called when a recovered signature can be safely removed from the DB. This is only safe when some other
-    // mechanism prevents possible conflicts. As an example, ChainLocks prevent conflicts in confirmed TXs InstantSend votes
+    // mechanism prevents possible conflicts. As an example, ChainLocks prevent conflicts in confirmed TXs InstaPAC votes
     // This won't completely remove all traces of the recovered sig but instead leave the hash entry in the DB. This
     // allows AlreadyHave to keep returning true. Cleanup will later remove the remains
     void TruncateRecoveredSig(Consensus::LLMQType llmqType, const uint256& id);

@@ -602,7 +602,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
             return txStatusDecoration(rec);
         case Watchonly:
             return txWatchonlyDecoration(rec);
-        case InstantSend:
+        case InstaPAC:
             return txInstantSendDecoration(rec);
         case ToAddress:
             return txAddressDecoration(rec);
@@ -637,7 +637,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
             return formatTxType(rec);
         case Watchonly:
             return (rec->involvesWatchAddress ? 1 : 0);
-        case InstantSend:
+        case InstaPAC:
             return (rec->status.lockedByInstantSend ? 1 : 0);
         case ToAddress:
             return formatTxToAddress(rec, true);
@@ -762,8 +762,8 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
                 return tr("Type of transaction.");
             case Watchonly:
                 return tr("Whether or not a watch-only address is involved in this transaction.");
-            case InstantSend:
-                return tr("Whether or not this transaction was locked by InstantSend.");
+            case InstaPAC:
+                return tr("Whether or not this transaction was locked by InstaPAC.");
             case ToAddress:
                 return tr("User-defined intent/purpose of the transaction.");
             case Amount:

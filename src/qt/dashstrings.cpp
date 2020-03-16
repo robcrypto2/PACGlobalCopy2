@@ -61,7 +61,7 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Disable all PACGlobal specific functionality (Masternodes, PrivateSend, "
-"InstantSend, Governance) (0-1, default: %u)"),
+"InstaPAC, Governance) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Discover own IP addresses (default: 1 when listening and no -externalip or -"
 "proxy)"),
@@ -74,10 +74,10 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "Enable multiple PrivateSend mixing sessions per block, experimental (0-1, "
 "default: %u)"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Enable publish raw transactions of attempted InstantSend double spend in "
+"Enable publish raw transactions of attempted InstaPAC double spend in "
 "<address>"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Enable publish transaction hashes of attempted InstantSend double spend in "
+"Enable publish transaction hashes of attempted InstaPAC double spend in "
 "<address>"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Enable use of PrivateSend for funds stored in this wallet (0-1, default: %u)"),
@@ -99,7 +99,7 @@ QT_TRANSLATE_NOOP("dash-core", ""
 "Execute command when a relevant alert is received or we see a really long "
 "fork (%s in cmd is replaced by message)"),
 QT_TRANSLATE_NOOP("dash-core", ""
-"Execute command when a wallet InstantSend transaction is successfully locked "
+"Execute command when a wallet InstaPAC transaction is successfully locked "
 "(%s in cmd is replaced by TxID)"),
 QT_TRANSLATE_NOOP("dash-core", ""
 "Execute command when a wallet transaction changes (%s in cmd is replaced by "
@@ -390,10 +390,10 @@ QT_TRANSLATE_NOOP("dash-core", "ERROR! Failed to create automatic backup"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash block in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash of governance objects (like proposals) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash of governance votes in <address>"),
-QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction (locked via InstantSend) in <address>"),
+QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction (locked via InstaPAC) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish hash transaction in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish raw block in <address>"),
-QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction (locked via InstantSend) in <address>"),
+QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction (locked via InstaPAC) in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Enable publish raw transaction in <address>"),
 QT_TRANSLATE_NOOP("dash-core", "Entries are full."),
 QT_TRANSLATE_NOOP("dash-core", "Entry exceeds maximum size."),
@@ -437,7 +437,7 @@ QT_TRANSLATE_NOOP("dash-core", "Information"),
 QT_TRANSLATE_NOOP("dash-core", "Initialization sanity check failed. %s is shutting down."),
 QT_TRANSLATE_NOOP("dash-core", "Input is not valid."),
 QT_TRANSLATE_NOOP("dash-core", "Inputs vs outputs size mismatch."),
-QT_TRANSLATE_NOOP("dash-core", "InstantSend options:"),
+QT_TRANSLATE_NOOP("dash-core", "InstaPAC options:"),
 QT_TRANSLATE_NOOP("dash-core", "Insufficient funds."),
 QT_TRANSLATE_NOOP("dash-core", "Invalid -onion address or hostname: '%s'"),
 QT_TRANSLATE_NOOP("dash-core", "Invalid -proxy address or hostname: '%s'"),

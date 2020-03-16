@@ -44,7 +44,7 @@ public:
 
     /// Transaction counts towards available balance
     bool countsForBalance;
-    /// Transaction was locked via InstantSend
+    /// Transaction was locked via InstaPAC
     bool lockedByInstantSend;
     /// Transaction was locked via ChainLocks
     bool lockedByChainLocks;

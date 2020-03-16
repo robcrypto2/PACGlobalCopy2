@@ -392,7 +392,7 @@ enum GetDataMsg {
     // PACGlobal message types
     // NOTE: declare non-implmented here, we must keep this enum consistent and backwards compatible
     MSG_LEGACY_TXLOCK_REQUEST = 4,
-    /* MSG_TXLOCK_VOTE = 5, Legacy InstantSend and not used anymore  */
+    /* MSG_TXLOCK_VOTE = 5, Legacy InstaPAC and not used anymore  */
     MSG_SPORK = 6,
     /* 7 - 15 were used in old PACGlobal versions and were mainly budget and MN broadcast/ping related*/
     MSG_DSTX = 16,

@@ -36,7 +36,7 @@ public:
 class CDKGContribution
 {
 public:
-    uint8_t llmqType;
+    Consensus::LLMQType llmqType;
     uint256 quorumHash;
     uint256 proTxHash;
     BLSVerificationVectorPtr vvec;
@@ -88,7 +88,7 @@ public:
 class CDKGComplaint
 {
 public:
-    uint8_t llmqType;
+    Consensus::LLMQType llmqType;
     uint256 quorumHash;
     uint256 proTxHash;
     std::vector<bool> badMembers;
@@ -97,7 +97,7 @@ public:
 
 public:
     CDKGComplaint() {}
-    CDKGComplaint(const Consensus::LLMQParams& params);
+    explicit CDKGComplaint(const Consensus::LLMQParams& params);
 
     ADD_SERIALIZE_METHODS
 
@@ -123,7 +123,7 @@ public:
 class CDKGJustification
 {
 public:
-    uint8_t llmqType;
+    Consensus::LLMQType llmqType;
     uint256 quorumHash;
     uint256 proTxHash;
     std::vector<std::pair<uint32_t, CBLSSecretKey>> contributions;
@@ -157,7 +157,7 @@ public:
 class CDKGPrematureCommitment
 {
 public:
-    uint8_t llmqType;
+    Consensus::LLMQType llmqType;
     uint256 quorumHash;
     uint256 proTxHash;
     std::vector<bool> validMembers;
@@ -170,7 +170,7 @@ public:
 
 public:
     CDKGPrematureCommitment() {}
-    CDKGPrematureCommitment(const Consensus::LLMQParams& params);
+    explicit CDKGPrematureCommitment(const Consensus::LLMQParams& params);
 
     int CountValidMembers() const
     {
@@ -240,7 +240,6 @@ class CDKGSession
     friend class CDKGSessionHandler;
     friend class CDKGSessionManager;
     friend class CDKGLogger;
-    template<typename Message> friend class CDKGMessageHandler;
 
 private:
     const Consensus::LLMQParams& params;
@@ -275,7 +274,6 @@ private:
     std::map<uint256, CDKGComplaint> complaints;
     std::map<uint256, CDKGJustification> justifications;
     std::map<uint256, CDKGPrematureCommitment> prematureCommitments;
-    std::set<CInv> invSet;
 
     std::vector<size_t> pendingContributionVerifications;
 

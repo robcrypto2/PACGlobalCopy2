@@ -68,8 +68,8 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     instantsendWidget = new QComboBox(this);
     instantsendWidget->setFixedWidth(24);
     instantsendWidget->addItem(tr("All"), TransactionFilterProxy::InstantSendFilter_All);
-    instantsendWidget->addItem(tr("Locked by InstantSend"), TransactionFilterProxy::InstantSendFilter_Yes);
-    instantsendWidget->addItem(tr("Not locked by InstantSend"), TransactionFilterProxy::InstantSendFilter_No);
+    instantsendWidget->addItem(tr("Locked by InstaPAC"), TransactionFilterProxy::InstantSendFilter_Yes);
+    instantsendWidget->addItem(tr("Not locked by InstaPAC"), TransactionFilterProxy::InstantSendFilter_No);
     hlayout->addWidget(instantsendWidget);
 
     dateWidget = new QComboBox(this);
@@ -253,7 +253,7 @@ void TransactionView::setModel(WalletModel *_model)
 
         transactionView->setColumnWidth(TransactionTableModel::Status, STATUS_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Watchonly, WATCHONLY_COLUMN_WIDTH);
-        transactionView->setColumnWidth(TransactionTableModel::InstantSend, INSTANTSEND_COLUMN_WIDTH);
+        transactionView->setColumnWidth(TransactionTableModel::InstaPAC, INSTANTSEND_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Date, DATE_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Type, TYPE_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Amount, AMOUNT_MINIMUM_COLUMN_WIDTH);

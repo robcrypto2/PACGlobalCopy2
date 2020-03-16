@@ -30,7 +30,7 @@ public:
     enum ColumnIndex {
         Status = 0,
         Watchonly = 1,
-        InstantSend = 2,
+        InstaPAC = 2,
         Date = 3,
         Type = 4,
         ToAddress = 5,
@@ -51,9 +51,9 @@ public:
         WatchonlyRole,
         /** Watch-only icon */
         WatchonlyDecorationRole,
-        /** InstantSend boolean */
+        /** InstaPAC boolean */
         InstantSendRole,
-        /** InstantSend icon */
+        /** InstaPAC icon */
         InstantSendDecorationRole,
         /** Long description (HTML format) */
         LongDescriptionRole,
