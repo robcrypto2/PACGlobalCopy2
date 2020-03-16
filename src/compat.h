@@ -41,8 +41,9 @@
 #include <mswsock.h>
 #include <windows.h>
 #include <ws2tcpip.h>
+#include <stdint.h>
 #else
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/select.h>
 #include <sys/socket.h>
