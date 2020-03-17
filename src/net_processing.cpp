@@ -1730,7 +1730,7 @@ void static ProcessOrphanTx(CConnman* connman, std::set<uint256>& orphan_work_se
             EraseOrphanTx(orphanHash);
             done = true;
         }
-        mempool.check(pcoinsTip);
+        mempool.check(pcoinsTip.get());
     }
 }
 
@@ -2512,7 +2512,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 CPrivateSend::AddDSTX(dstx);
             }
 
-            mempool.check(pcoinsTip);
+            mempool.check(pcoinsTip.get());
             connman->RelayTransaction(tx);
             for (unsigned int i = 0; i < tx.vout.size(); i++) {
                 auto it_by_prev = mapOrphanTransactionsByPrev.find(COutPoint(inv.hash, i));
