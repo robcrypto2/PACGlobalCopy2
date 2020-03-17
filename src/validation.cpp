@@ -875,65 +875,41 @@ bool GetAddressUnspent(uint160 addressHash, int type,
     return true;
 }
 
-/** Return transaction in txOut, and if it was found inside a block, its hash is placed in hashBlock */
-bool GetTransaction(const uint256 &hash, CTransactionRef &txOut, const Consensus::Params& consensusParams, uint256 &hashBlock, bool fAllowSlow)
+/**
+ * Return transaction in txOut, and if it was found inside a block, its hash is placed in hashBlock.
+ * If blockIndex is provided, the transaction is fetched from the corresponding block.
+ */
+bool GetTransaction(const uint256& hash, CTransactionRef& txOut, const Consensus::Params& consensusParams, uint256& hashBlock, const CBlockIndex* const block_index)
 {
-    CBlockIndex *pindexSlow = nullptr;
-
     LOCK(cs_main);
 
-    CTransactionRef ptx = mempool.get(hash);
-    if (ptx)
+    if (!block_index)
     {
-        txOut = ptx;
-        return true;
-    }
-
-    if (fTxIndex) {
-        CDiskTxPos postx;
-        if (pblocktree->ReadTxIndex(hash, postx)) {
-            CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
-            if (file.IsNull())
-                return error("%s: OpenBlockFile failed", __func__);
-            CBlockHeader header;
-            try {
-                file >> header;
-                fseek(file.Get(), postx.nTxOffset, SEEK_CUR);
-                file >> txOut;
-            } catch (const std::exception& e) {
-                return error("%s: Deserialize or I/O error - %s", __func__, e.what());
-            }
-            hashBlock = header.GetHash();
-            if (txOut->GetHash() != hash)
-                return error("%s: txid mismatch", __func__);
+        CTransactionRef ptx = mempool.get(hash);
+        if (ptx) {
+            txOut = ptx;
             return true;
         }
 
-        // transaction not found in index, nothing more can be done
-        return false;
-    }
+        return pblocktree->FindTx(hash, hashBlock, txOut);
 
-    if (fAllowSlow) { // use coin database to locate block that contains transaction, and scan it
-        const Coin& coin = AccessByTxid(*pcoinsTip, hash);
-        if (!coin.IsSpent()) pindexSlow = chainActive[coin.nHeight];
-    }
+    } else {
 
-    if (pindexSlow) {
         CBlock block;
-        if (ReadBlockFromDisk(block, pindexSlow, consensusParams)) {
+        if (ReadBlockFromDisk(block, block_index, consensusParams)) {
             for (const auto& tx : block.vtx) {
                 if (tx->GetHash() == hash) {
                     txOut = tx;
-                    hashBlock = pindexSlow->GetBlockHash();
+                    hashBlock = block_index->GetBlockHash();
                     return true;
                 }
             }
         }
+
     }
 
     return false;
 }
-
 
 
 
@@ -988,13 +964,18 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 
     // Check the header
     if (block.IsProofOfWork()) {
-        if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
-            return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+        uint256 hashProofOfWork = block.GetHash();
+        if (!CheckProofOfWork(hashProofOfWork, block.nBits, consensusParams)) {
+            LogPrintf("%s - hashProofOfWork %s block %s\n", __func__, hashProofOfWork.ToString().c_str(), block.ToString().c_str());
+            return error("ReadBlockFromDisk: Errors in block header (PoW) at %s", pos.ToString());
+        }
     } else {
         uint256 hashProofOfStake = uint256();
         const CBlockIndex* checkTip = chainActive.Tip();
-        if (!CheckProofOfStake(block, hashProofOfStake, checkTip))
-            return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+        if (!CheckProofOfStake(block, hashProofOfStake, checkTip)) {
+            LogPrintf("%s - hashProofOfStake %s block %s\n", __func__, hashProofOfStake.ToString().c_str(), block.ToString().c_str());
+            return error("ReadBlockFromDisk: Errors in block header (Pos) at %s", pos.ToString());
+        }
     }
 
     return true;

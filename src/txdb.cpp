@@ -12,6 +12,7 @@
 #include "uint256.h"
 #include "util.h"
 #include "ui_interface.h"
+#include "validation.h"    //! for access to OpenBlockFile
 #include "init.h"
 
 #include <stdint.h>
@@ -394,6 +395,40 @@ bool CBlockTreeDB::ReadFlag(const std::string &name, bool &fValue) {
     fValue = ch == '1';
     return true;
 }
+
+bool CBlockTreeDB::ReadTxPos(const uint256 &txid, CDiskTxPos& pos) const
+{
+    return Read(std::make_pair(DB_TXINDEX, txid), pos);
+}
+
+bool CBlockTreeDB::FindTx(const uint256& tx_hash, uint256& block_hash, CTransactionRef& tx) const
+{
+    CDiskTxPos postx;
+    if (!ReadTxPos(tx_hash, postx)) {
+        return false;
+    }
+
+    CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
+    if (file.IsNull()) {
+        return error("%s: OpenBlockFile failed", __func__);
+    }
+    CBlockHeader header;
+    try {
+        file >> header;
+        if (fseek(file.Get(), postx.nTxOffset, SEEK_CUR)) {
+            return error("%s: fseek(...) failed", __func__);
+        }
+        file >> tx;
+    } catch (const std::exception& e) {
+        return error("%s: Deserialize or I/O error - %s", __func__, e.what());
+    }
+    if (tx->GetHash() != tx_hash) {
+        return error("%s: txid mismatch", __func__);
+    }
+    block_hash = header.GetHash();
+    return true;
+}
+
 
 bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex)
 {
