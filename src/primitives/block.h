@@ -62,6 +62,11 @@ public:
 
     uint256 GetHash() const;
 
+    bool IsProofOfStake() const
+    {
+        return (nNonce == 0);
+    }
+
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;
