@@ -59,12 +59,12 @@ std::string CActiveMasternodeManager::GetStatus() const
     }
 }
 
-void CActiveMasternodeManager::Init()
+void CActiveMasternodeManager::Init(const CBlockIndex* pindex)
 {
     LOCK(cs_main);
 
     if (!fMasternodeMode) return;
-    if (!FullDIP0003Mode()) return;
+    if (!deterministicMNManager->IsDIP3Enforced(pindex->nHeight)) return;
 
     // Check that our local network configuration is correct
     if (!fListen) {
@@ -80,7 +80,7 @@ void CActiveMasternodeManager::Init()
         return;
     }
 
-    CDeterministicMNList mnList = deterministicMNManager->GetListAtChainTip();
+    CDeterministicMNList mnList = deterministicMNManager->GetListForBlock(pindex);
 
     CDeterministicMNCPtr dmn = mnList.GetMNByOperatorKey(*activeMasternodeInfo.blsPubKeyOperator);
     if (!dmn) {
@@ -146,7 +146,7 @@ void CActiveMasternodeManager::UpdatedBlockTip(const CBlockIndex* pindexNew, con
             activeMasternodeInfo.proTxHash = uint256();
             activeMasternodeInfo.outpoint.SetNull();
             // MN might have reappeared in same block with a new ProTx
-            Init();
+            Init(pindexNew);
             return;
         }
 
@@ -158,7 +158,7 @@ void CActiveMasternodeManager::UpdatedBlockTip(const CBlockIndex* pindexNew, con
             activeMasternodeInfo.proTxHash = uint256();
             activeMasternodeInfo.outpoint.SetNull();
             // MN might have reappeared in same block with a new ProTx
-            Init();
+            Init(pindexNew);
             return;
         }
 
@@ -167,13 +167,13 @@ void CActiveMasternodeManager::UpdatedBlockTip(const CBlockIndex* pindexNew, con
             state = MASTERNODE_PROTX_IP_CHANGED;
             activeMasternodeInfo.proTxHash = uint256();
             activeMasternodeInfo.outpoint.SetNull();
-            Init();
+            Init(pindexNew);
             return;
         }
     } else {
         // MN might have (re)appeared with a new ProTx or we've found some peers
         // and figured out our local address
-        Init();
+        Init(pindexNew);
     }
 }
 

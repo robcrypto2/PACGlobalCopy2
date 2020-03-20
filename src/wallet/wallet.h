@@ -1180,7 +1180,7 @@ public:
 
     void GetScriptForMining(std::shared_ptr<CReserveScript> &script);
 
-    void ResetRequestCount(const uint256 &hash) override
+    void ResetRequestCount(const uint256 &hash)
     {
         LOCK(cs_wallet);
         mapRequestCount[hash] = 0;
