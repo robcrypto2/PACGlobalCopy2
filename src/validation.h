@@ -433,6 +433,14 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams, const char* str = __builtin_FUNCTION());
 #endif
 
+#if __APPLE__
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start);
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start);
+#else
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start, const char* str = __builtin_FUNCTION());
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start, const char* str = __builtin_FUNCTION());
+#endif
+
 /** Functions for validating blocks and updating the block tree */
 
 /** Context-independent validity checks */
@@ -448,6 +456,8 @@ public:
     ~CVerifyDB();
     bool VerifyDB(const CChainParams& chainparams, CCoinsView *coinsview, int nCheckLevel, int nCheckDepth);
 };
+
+CBlockIndex* LookupBlockIndex(const uint256& hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Replay blocks that aren't fully applied to the database. */
 bool ReplayBlocks(const CChainParams& params, CCoinsView* view);
