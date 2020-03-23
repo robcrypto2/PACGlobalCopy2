@@ -7,7 +7,7 @@
 
 #include "chainparams.h"
 #include "consensus/merkle.h"
-
+#include "random.h"
 #include "tinyformat.h"
 #include "util.h"
 #include "utilstrencodings.h"
@@ -349,8 +349,6 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x00000354655ff039a51273fe61d3b493bd2897fe6c16f732dbc4ae19f04b789e"));
         assert(genesis.hashMerkleRoot == uint256S("0xf3939e4de05e537431ef32bbebd9bc7c4e701f7205d72016f04686557af58dbf"));
 
-        vSeeds.emplace_back("seed.pacglobal.io");
-
         // PAC addresses start with 'P'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,55);
         // PAC script addresses start with '5'
@@ -365,7 +363,12 @@ public:
         // PAC BIP44 coin type is '5'
         nExtCoinType = 5;
 
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
+        //! randomize seed selection
+        auto numseed = GetRandInt(4);
+        if (numseed == 0) vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main_pair1, pnSeed6_main_pair1 + ARRAYLEN(pnSeed6_main_pair1));
+        if (numseed == 1) vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main_pair2, pnSeed6_main_pair2 + ARRAYLEN(pnSeed6_main_pair2));
+        if (numseed == 2) vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main_pair3, pnSeed6_main_pair3 + ARRAYLEN(pnSeed6_main_pair3));
+        if (numseed == 3) vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main_pair4, pnSeed6_main_pair4 + ARRAYLEN(pnSeed6_main_pair4));
 
         // long living quorum params
         consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
