@@ -206,6 +206,13 @@ namespace {
     std::set<int> setDirtyFileInfo;
 } // anon namespace
 
+CBlockIndex* LookupBlockIndex(const uint256& hash)
+{
+    AssertLockHeld(cs_main);
+    BlockMap::const_iterator it = mapBlockIndex.find(hash);
+    return it == mapBlockIndex.end() ? nullptr : it->second;
+}
+
 CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& locator)
 {
     // Find the first block the caller has in the main chain
@@ -962,20 +969,21 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
         return error("%s: Deserialize or I/O error - %s at %s", __func__, e.what(), pos.ToString());
     }
 
-    // Check the header
-    if (block.IsProofOfWork()) {
-        uint256 hashProofOfWork = block.GetHash();
-        if (!CheckProofOfWork(hashProofOfWork, block.nBits, consensusParams)) {
-            LogPrintf("%s - hashProofOfWork %s block %s\n", __func__, hashProofOfWork.ToString().c_str(), block.ToString().c_str());
-            return error("ReadBlockFromDisk: Errors in block header (PoW) at %s", pos.ToString());
-        }
-    } else {
-        uint256 hashProofOfStake = uint256();
-        const CBlockIndex* checkTip = chainActive.Tip();
-        if (!CheckProofOfStake(block, hashProofOfStake, checkTip)) {
-            LogPrintf("%s - hashProofOfStake %s block %s\n", __func__, hashProofOfStake.ToString().c_str(), block.ToString().c_str());
-            return error("ReadBlockFromDisk: Errors in block header (Pos) at %s", pos.ToString());
-        }
+    if (IsInitialBlockDownload()) {
+	if (block.IsProofOfWork()) {
+	uint256 hashProofOfWork = block.GetHash();
+	if (!CheckProofOfWork(hashProofOfWork, block.nBits, consensusParams)) {
+		LogPrintf("%s - hashProofOfWork %s block %s\n", __func__, hashProofOfWork.ToString().c_str(), block.ToString().c_str());
+		return error("ReadBlockFromDisk: Errors in block header (PoW) at %s", pos.ToString());
+	}
+	} else {
+	uint256 hashProofOfStake = uint256();
+	const CBlockIndex* checkTip = chainActive.Tip();
+	if (!CheckProofOfStake(block, hashProofOfStake, checkTip)) {
+		LogPrintf("%s - hashProofOfStake %s block %s\n", __func__, hashProofOfStake.ToString().c_str(), block.ToString().c_str());
+		return error("ReadBlockFromDisk: Errors in block header (Pos) at %s", pos.ToString());
+	}
+	}
     }
 
     return true;
@@ -993,6 +1001,61 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
         return error("ReadBlockFromDisk(CBlock&, CBlockIndex*): GetHash() doesn't match index for %s at %s",
                 pindex->ToString(), pindex->GetBlockPos().ToString());
     return true;
+}
+
+#if __APPLE__
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start) {
+#else
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start, const char* str) {
+    LogPrintf("ReadRawBlockFromDisk()::called by %s\n", str);
+#endif
+    CDiskBlockPos hpos = pos;
+    hpos.nPos -= 8; // Seek back 8 bytes for meta header
+    CAutoFile filein(OpenBlockFile(hpos, true), SER_DISK, CLIENT_VERSION);
+    if (filein.IsNull()) {
+        return error("%s: OpenBlockFile failed for %s", __func__, pos.ToString());
+    }
+
+    try {
+        CMessageHeader::MessageStartChars blk_start;
+        unsigned int blk_size;
+
+        filein >> blk_start >> blk_size;
+
+        if (memcmp(blk_start, message_start, CMessageHeader::MESSAGE_START_SIZE)) {
+            return error("%s: Block magic mismatch for %s: %s versus expected %s", __func__, pos.ToString(),
+                    HexStr(blk_start, blk_start + CMessageHeader::MESSAGE_START_SIZE),
+                    HexStr(message_start, message_start + CMessageHeader::MESSAGE_START_SIZE));
+        }
+
+        if (blk_size > MAX_SIZE) {
+            return error("%s: Block data is larger than maximum deserialization size for %s: %s versus %s", __func__, pos.ToString(),
+                    blk_size, MAX_SIZE);
+        }
+
+        block.resize(blk_size); // Zeroing of memory is intentional here
+        filein.read((char*)block.data(), blk_size);
+    } catch(const std::exception& e) {
+        return error("%s: Read from block file failed: %s for %s", __func__, e.what(), pos.ToString());
+    }
+
+    return true;
+}
+
+#if __APPLE__
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start) {
+#else
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start, const char* str) {
+    LogPrintf("ReadRawBlockFromDisk()::called by %s\n", str);
+#endif
+
+    CDiskBlockPos block_pos;
+    {
+        LOCK(cs_main);
+        block_pos = pindex->GetBlockPos();
+    }
+
+    return ReadRawBlockFromDisk(block, block_pos, message_start);
 }
 
 double ConvertBitsToDouble(unsigned int nBits)
