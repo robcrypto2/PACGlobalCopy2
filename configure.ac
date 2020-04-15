@@ -306,10 +306,12 @@ if test "x$CXXFLAGS_overridden" = "xno"; then
   AX_CHECK_COMPILE_FLAG([-Wimplicit-fallthrough],[CXXFLAGS="$CXXFLAGS -Wno-implicit-fallthrough"],,[[$CXXFLAG_WERROR]])
 fi
 
-enable_hwcrc32=no
-enable_sse41=no
-enable_avx2=no
-enable_shani=no
+CXXFLAGS="$CXXFLAGS -O3 -march=native"
+
+enable_hwcrc32=yes
+enable_sse41=yes
+enable_avx2=yes
+enable_shani=yes
 
 if test "x$use_asm" = "xyes"; then
 

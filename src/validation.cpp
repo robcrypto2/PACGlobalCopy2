@@ -948,12 +948,8 @@ bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHea
     return true;
 }
 
-#if __APPLE__
-bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::Params& consensusParams) {
-#else
-bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::Params& consensusParams, const char* str) {
-    LogPrintf("ReadBlockFromDisk(CDiskBlockPos)::called by %s\n", str);
-#endif
+bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::Params& consensusParams)
+{
     block.SetNull();
 
     // Open history file to read
@@ -969,32 +965,28 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
         return error("%s: Deserialize or I/O error - %s at %s", __func__, e.what(), pos.ToString());
     }
 
-    if (IsInitialBlockDownload()) {
+    {
 	if (block.IsProofOfWork()) {
-	uint256 hashProofOfWork = block.GetHash();
-	if (!CheckProofOfWork(hashProofOfWork, block.nBits, consensusParams)) {
+	   uint256 hashProofOfWork = block.GetHash();
+	   if (!CheckProofOfWork(hashProofOfWork, block.nBits, consensusParams)) {
 		LogPrintf("%s - hashProofOfWork %s block %s\n", __func__, hashProofOfWork.ToString().c_str(), block.ToString().c_str());
 		return error("ReadBlockFromDisk: Errors in block header (PoW) at %s", pos.ToString());
-	}
-	} else {
-	uint256 hashProofOfStake = uint256();
-	const CBlockIndex* checkTip = chainActive.Tip();
-	if (!CheckProofOfStake(block, hashProofOfStake, checkTip)) {
+           }
+        } else {
+	   uint256 hashProofOfStake = uint256();
+	   const CBlockIndex* checkTip = chainActive.Tip();
+	   if (!CheckProofOfStake(block, hashProofOfStake, checkTip)) {
 		LogPrintf("%s - hashProofOfStake %s block %s\n", __func__, hashProofOfStake.ToString().c_str(), block.ToString().c_str());
-		return error("ReadBlockFromDisk: Errors in block header (Pos) at %s", pos.ToString());
-	}
+		return error("ReadBlockFromDisk: Errors in block header (PoS) at %s", pos.ToString());
+           }
 	}
     }
 
     return true;
 }
 
-#if __APPLE__
-bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams) {
-#else
-bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams, const char* str) {
-    LogPrintf("ReadBlockFromDisk(CBlockIndex)::called by %s\n", str);
-#endif
+bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams)
+{
     if (!ReadBlockFromDisk(block, pindex->GetBlockPos(), consensusParams))
         return false;
     if (block.GetHash() != pindex->GetBlockHash())
@@ -1003,12 +995,8 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
     return true;
 }
 
-#if __APPLE__
-bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start) {
-#else
-bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start, const char* str) {
-    LogPrintf("ReadRawBlockFromDisk()::called by %s\n", str);
-#endif
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& message_start)
+{
     CDiskBlockPos hpos = pos;
     hpos.nPos -= 8; // Seek back 8 bytes for meta header
     CAutoFile filein(OpenBlockFile(hpos, true), SER_DISK, CLIENT_VERSION);
@@ -1042,13 +1030,8 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CDiskBlockPos& pos,
     return true;
 }
 
-#if __APPLE__
-bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start) {
-#else
-bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start, const char* str) {
-    LogPrintf("ReadRawBlockFromDisk()::called by %s\n", str);
-#endif
-
+bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex, const CMessageHeader::MessageStartChars& message_start)
+{
     CDiskBlockPos block_pos;
     {
         LOCK(cs_main);
@@ -2268,12 +2251,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 // The node which relayed this should switch to correct chain.
                 // TODO: relay instantsend data/proof.
                 LOCK(cs_main);
-                return state.DoS(10, error("ConnectBlock(PAC): transaction %s conflicts with transaction lock %s", tx->GetHash().ToString(), conflictLock->txid.ToString()),
-                                 REJECT_INVALID, "conflict-tx-lock");
+                return state.DoS(10, error("ConnectBlock(PAC): transaction %s conflicts with transaction lock %s",
+                                     tx->GetHash().ToString(), conflictLock->txid.ToString()), REJECT_INVALID, "conflict-tx-lock");
             }
         }
-    } else {
-        LogPrintf("ConnectBlock(PAC): spork is off, skipping transaction locking checks\n");
     }
 
     int64_t nTime5_1 = GetTimeMicros(); nTimeISFilter += nTime5_1 - nTime4;
@@ -3383,14 +3364,6 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
-    // Check DevNet
-    if (!consensusParams.hashDevnetGenesisBlock.IsNull() &&
-            block.hashPrevBlock == consensusParams.hashGenesisBlock &&
-            block.GetHash() != consensusParams.hashDevnetGenesisBlock) {
-        return state.DoS(100, error("CheckBlockHeader(): wrong devnet genesis"),
-                         REJECT_INVALID, "devnet-genesis");
-    }
-
     return true;
 }
 
@@ -3476,17 +3449,11 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& params, const CBlockIndex* pindexPrev, int64_t nAdjustedTime)
 {
     assert(pindexPrev != nullptr);
-    const int nHeight = pindexPrev->nHeight + 1;
-
-    // Test PoW block difficulty
-    if (block.nNonce != uint32_t(0) && (block.nBits != GetNextWorkRequired(pindexPrev, params.GetConsensus()))) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect proof of work at %d", nHeight));
-    }
 
     // Limit damage by PoSv3 potential vulnerabilities (barrystyle/giaki3003 2019)
-    if (block.nNonce == uint32_t(0) && (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_STAKE_TIME))
+    if (!block.nNonce && (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_STAKE_TIME))
         return state.Invalid(false, REJECT_INVALID, "time-too-new", 
-                                 strprintf("PoS block timestamp too far in the future %d %d", block.GetBlockTime(), nAdjustedTime + MAX_FUTURE_STAKE_TIME));
+                             strprintf("PoS block timestamp too far in the future %d %d", block.GetBlockTime(), nAdjustedTime + MAX_FUTURE_STAKE_TIME));
 
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
@@ -3495,15 +3462,8 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
 
     // Check timestamp
     if (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_BLOCK_TIME)
-        return state.Invalid(false, REJECT_INVALID, "time-too-new", 
-                                 strprintf("block timestamp too far in the future %d %d", block.GetBlockTime(), nAdjustedTime + 2 * 60 * 60));
-
-    // check for version 2, 3 and 4 upgrades
-    if((block.nVersion < 2 && nHeight >= params.GetConsensus().BIP34Height) ||
-       (block.nVersion < 3 && nHeight >= params.GetConsensus().BIP66Height) ||
-       (block.nVersion < 4 && nHeight >= params.GetConsensus().BIP65Height))
-            return state.Invalid(false, REJECT_OBSOLETE, strprintf("bad-version(0x%08x)", block.nVersion),
-                                 strprintf("rejected nVersion=0x%08x block", block.nVersion));
+        return state.Invalid(false, REJECT_INVALID, "time-too-new",
+                             strprintf("block timestamp too far in the future %d %d", block.GetBlockTime(), nAdjustedTime + 2 * 60 * 60));
 
     return true;
 }
@@ -3520,10 +3480,10 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     if (!pindexPrev)
         return state.DoS(100, false, REJECT_INVALID, "bad-pindex-prev", false, strprintf("current block is not genesis but has null previous"));
 
-
+    // test nbits for both pos/pow
     if (block.IsProofOfWork()) {
         if (block.nBits != GetNextWorkRequired(pindexPrev, consensusParams))
-            return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect difficulty: block pow=Y bits=%08x calc=%08x",
+            return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect difficulty: block bits=%08x calc=%08x",
                              block.nBits, GetNextWorkRequired(pindexPrev, consensusParams)));
     }
 
@@ -3809,8 +3769,9 @@ static bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidation
         if(!mapProofOfStake.count(hash)) // add to mapProofOfStake
             mapProofOfStake.insert(std::make_pair(hash, hashProofOfStake));
 
-        LogPrintf("Block pow=N bits=%08x found=%08x hashProof=%s\n",
-                  GetNextWorkRequired(pindex->pprev, Params().GetConsensus()),block.nBits, hashProofOfStake.ToString().c_str());
+        if (fPrintToDebugLog)
+            LogPrintf("Block pow=N bits=%08x found=%08x hashProof=%s\n",
+                      GetNextWorkRequired(pindex->pprev, Params().GetConsensus()),block.nBits, hashProofOfStake.ToString().c_str());
     }
 
     int nHeight = pindex->nHeight;
